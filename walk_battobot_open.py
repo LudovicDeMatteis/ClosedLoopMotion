@@ -7,8 +7,8 @@ from numpy.linalg import norm, pinv, inv, svd, eig  # noqa: F401
 # Local imports
 import sobec
 import sobec.walk_without_think.plotter
-import specific_params
-from loaders.loaders_virgile import load_complete_open
+import loaders
+import params
 
 # #####################################################################################
 # ## TUNING ###########################################################################
@@ -22,7 +22,7 @@ from loaders.loaders_virgile import load_complete_open
 import sys
 print(sys.argv)
 
-walkParams = specific_params.WalkBattobotParams('open')
+walkParams = params.WalkBattobotParams('open')
 if len(sys.argv) > 1:
     WS = bool(sys.argv[1])
     walkParams.saveFile = sys.argv[2]
@@ -46,16 +46,11 @@ else:
     walkParams.slope = 00 * 1e-4
     autosave = False
 
-print("WS", WS)
-print("slope", walkParams.slope)
-print("velocity", walkParams.vcomRef)
-
-
 # #####################################################################################
 # ### LOAD ROBOT ######################################################################
 # #####################################################################################
 
-robot = load_complete_open(base_height)
+robot = loaders.battobot_open(base_height=base_height)
 assert len(walkParams.stateImportance) == robot.model.nv * 2
 
 # #####################################################################################
