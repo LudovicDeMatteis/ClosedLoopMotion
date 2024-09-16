@@ -1,0 +1,1 @@
+from .battobot_params import WalkBattobotParams
