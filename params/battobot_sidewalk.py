@@ -7,7 +7,7 @@ def roundToOdd(x):
     '''
     return 2 * int(np.round(x / 2 - 0.5001)) + 1
 
-class WalkBattobotParams:
+class SideWalkBattobotParams:
     '''
     Parameters for the walk of the Battobot robot.
     '''
@@ -19,6 +19,7 @@ class WalkBattobotParams:
         'hipy_left',
         'knee_left',
     ]
+
     # Define time steps
     DT = 0.015
     Tstart = int(0.2 / DT)
@@ -29,12 +30,32 @@ class WalkBattobotParams:
     Tsimu = int(10 / DT)
     transitionDuration = (Tdouble - 1) // 2
 
+    cycle = ( [[1, 0]] * Tsingle
+              + [[1, 1]] * Tdouble
+              + [[0, 1]] * Tsingle
+              + [[1, 1]] * Tdouble
+            )
+    contactPattern = (
+        []
+        + [[1, 1]] * Tstart
+        + (cycle * 4)
+        + [[1, 1]] * Tend
+        + [[1, 1]]
+    )
+
     ## Define costs
     # * Task specific cost
-    vcomRef = np.r_[ 0.4, 0,0 ]
-    vcomImportance = np.array([0, 0, 1])
-    vcomWeight = 1e3
-    comRef = np.r_[ 0.0, 0, 0.460 ]
+    vcomWeight = 100
+    vcomRef = np.r_[ 0.0, -0.4, 0 ]
+    vcomImportance = np.array([1, 1, 0])
+
+    comWeight = 0 
+    comRef = np.r_[ 0, 0, 0]
+    comImportance = np.array([0, 0, 1])
+
+    comHeightWeight = 0
+    comHeightTargets = [np.r_[0.0, 0.0, 0.8]]
+    comHeightTimes = []
     
     # * Impact Time costs
     impactAltitudeWeight = 1e4  # /
@@ -43,17 +64,16 @@ class WalkBattobotParams:
     refMainJointsAtImpactWeight = 0
 
     # * Regularisation costs
-    refStateWeight = 0.15       # /
+    refStateWeight = 0.2       # /
     refTorqueWeight = 0.02     # /
-    stateTerminalWeight = 100
-    refForceWeight = 1       # /
+    stateTerminalWeight = 1e4
+    refForceWeight = 10       # /
 
     # * Realism costs
     centerOfFrictionWeight = 0
-    comWeight = 100 
     coneAxisWeight =  0.000
     conePenaltyWeight = 0
-    copWeight = 10
+    copWeight = 1
     feetCollisionWeight = 0 # 1000
     groundColWeight = 0
     footSize = 0.05
@@ -73,7 +93,7 @@ class WalkBattobotParams:
     baumgartGains = np.array([0, 100])
     transitionDuration = 4
     solver_th_stop = 1e-3
-    solver_maxiter = 2
+    solver_maxiter = 200
     solver_reg_min = 1e-6
 
     # Save parameters
@@ -100,7 +120,7 @@ class WalkBattobotParams:
                 basisQWeights + legQWeights * 2 + basisVWeights + legVWeights * 2
             )
             nv = len(basisVWeights) + 2* len(legVWeights)
-            self.stateTerminalImportance = np.array([3, 3, 0, 0, 0, 30] + [0] * (nv - 6) + [1] * nv)
+            self.stateTerminalImportance = np.array([0, 0, 0, 0, 0, 0] + [0] * (nv - 6) + [1] * nv)
             self.controlImportance = np.array([1] * 12)
         if model_type == 'closed':
             eps = 0
@@ -139,5 +159,5 @@ class WalkBattobotParams:
             )
             velocityTarget = np.zeros(2*len(legVWeights))
             velocityTarget[np.nonzero(legVWeights*2)] = 1
-            self.stateTerminalImportance = np.array([3, 3, 0, 0, 0, 30] + [0] * (2*len(legVWeights)) + [0, 0, 0, 0, 0, 0] + velocityTarget.tolist())
+            self.stateTerminalImportance = np.array([0, 0, 0, 0, 0, 0] + [0] * (2*len(legVWeights)) + [0, 0, 0, 0, 0, 0] + velocityTarget.tolist())
             self.controlImportance = np.array([1] * 12)

@@ -1,1 +1,3 @@
-from .battobot_params import WalkBattobotParams
+from .battobot_walk import WalkBattobotParams
+from .battobot_jump import JumpBattobotParams
+from .battobot_sidewalk import SideWalkBattobotParams

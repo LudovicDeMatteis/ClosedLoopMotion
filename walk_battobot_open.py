@@ -41,9 +41,6 @@ else:
         walkParams.guessFile = "/tmp/stairs_virgile_open_warmstarted_ws.npy"
         walkParams.saveFile = "/tmp/stairs_virgile_open_warmstarted_warmstarted.npy"
     base_height = 0.575
-    walkParams.vcomRef[0] = 0.4
-    walkParams.comWeight = 1000 #1000
-    walkParams.slope = 00 * 1e-4
     autosave = False
 
 # #####################################################################################
@@ -63,21 +60,7 @@ try:
     robot.x0 = ocpConfig["x0"]
     stateTerminalTarget = ocpConfig["stateTerminalTarget"]
 except (KeyError, FileNotFoundError):
-    # When the config file is not found ...
-    # Initial config, also used for warm start, both taken from robot wrapper.
-    # Contact are specified with the order chosen in <contactIds>.
-    cycle = ( [[1, 0]] * walkParams.Tsingle
-              + [[1, 1]] * walkParams.Tdouble
-              + [[0, 1]] * walkParams.Tsingle
-              + [[1, 1]] * walkParams.Tdouble
-            )
-    contactPattern = (
-        []
-        + [[1, 1]] * walkParams.Tstart
-        + (cycle * 4)
-        + [[1, 1]] * walkParams.Tend
-        + [[1, 1]]
-    )
+    contactPattern = walkParams.contactPattern
 
 # #####################################################################################
 # ### VIZ #############################################################################
