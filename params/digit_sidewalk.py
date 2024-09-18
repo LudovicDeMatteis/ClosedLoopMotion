@@ -39,8 +39,8 @@ class SideWalkDigitParams(ParamsBase):
 
     ## Define costs
     # * Task specific cost
-    vcomWeight = 1e6
-    vcomRef = np.r_[ 0, 0.3, 0 ]
+    vcomWeight = 1000
+    vcomRef = np.r_[ 0, 0.4, 0 ]
     vcomImportance = np.array([1, 1, 0])
 
     comWeight = 1000 
@@ -54,8 +54,8 @@ class SideWalkDigitParams(ParamsBase):
     refMainJointsAtImpactWeight = 0
 
     # * Regularisation costs
-    refStateWeight = 1       # /
-    refTorqueWeight = 0.05     # /
+    refStateWeight = 0.2       # /
+    refTorqueWeight = 0.02     # /
     stateTerminalWeight = 1e4
     refForceWeight = 10       # /
 
