@@ -54,7 +54,7 @@ class SideWalkDigitParams(ParamsBase):
     refMainJointsAtImpactWeight = 0
 
     # * Regularisation costs
-    refStateWeight = 0.1       # /
+    refStateWeight = 1       # /
     refTorqueWeight = 0.05     # /
     stateTerminalWeight = 1e4
     refForceWeight = 10       # /

@@ -46,7 +46,7 @@ class SideWalkBattobotParams:
     ## Define costs
     # * Task specific cost
     vcomWeight = 100
-    vcomRef = np.r_[ 0.0, -0.4, 0 ]
+    vcomRef = np.r_[ 0, -0.4, 0 ]
     vcomImportance = np.array([1, 1, 0])
 
     comWeight = 0 
