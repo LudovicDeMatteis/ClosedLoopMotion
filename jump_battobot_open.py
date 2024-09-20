@@ -115,32 +115,32 @@ sol = sobec.wwt.Solution(robot, ddp)
 plotter = sobec.wwt.plotter.WalkPlotter(robot.model, robot.contactIds)
 plotter.setData(contactPattern, sol.xs, sol.us, sol.fs0)
 
-# target = problem.terminalModel.differential.costs.costs[
-#     "stateReg"
-# ].cost.residual.reference
-# forceRef = [
-#     sobec.wwt.plotter.getReferenceForcesFromProblemModels(problem, cid)
-#     for cid in robot.contactIds
-# ]
-# forceRef = [np.concatenate(fs) for fs in zip(*forceRef)]
+target = problem.terminalModel.differential.costs.costs[
+    "stateReg"
+].cost.residual.reference
+forceRef = [
+    sobec.wwt.plotter.getReferenceForcesFromProblemModels(problem, cid)
+    for cid in robot.contactIds
+]
+forceRef = [np.concatenate(fs) for fs in zip(*forceRef)]
 
 # plotter.plotBasis(target)
-plotter.plotTimeCop()
-plotter.plotCopAndFeet(walkParams.footSize, 0.6)
-# plotter.plotForces(forceRef)
-plotter.plotCom(robot.com0)
-plotter.plotFeet()
-plotter.plotFootCollision(walkParams.footMinimalDistance)
-plotter.plotJointTorques()
-plotter.plotComAndCopInXY()
+# plotter.plotTimeCop()
+# plotter.plotCopAndFeet(walkParams.footSize, 0.6)
+plotter.plotForces(forceRef)
+# plotter.plotCom(robot.com0)
+# plotter.plotFeet()
+# plotter.plotFootCollision(walkParams.footMinimalDistance)
+# plotter.plotJointTorques()
+# plotter.plotComAndCopInXY()
 print("Run ```plt.ion(); plt.show()``` to display the plots.")
 plt.ion()
 plt.show()
 
-costPlotter = sobec.wwt.plotter.CostPlotter(robot.model, ddp)
-costPlotter.setData()
-costPlotter.plotCosts()
-# ## DEBUG ######################################################################
+# costPlotter = sobec.wwt.plotter.CostPlotter(robot.model, ddp)
+# costPlotter.setData()
+# costPlotter.plotCosts()
+# # ## DEBUG ######################################################################
 # ## DEBUG ######################################################################
 # ## DEBUG ######################################################################
 
