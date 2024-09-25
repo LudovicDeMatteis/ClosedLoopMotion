@@ -7,3 +7,6 @@ from .digit_walk import WalkDigitParams
 from .digit_jump import JumpDigitParams
 from .digit_sidewalk import SideWalkDigitParams
 from .digit_stairs import StairsDigitParams
+
+from .disney_walk import WalkDisneyParams
+from .disney_jump import JumpDisneyParams
