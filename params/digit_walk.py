@@ -64,7 +64,7 @@ class WalkDigitParams(ParamsBase):
     coneAxisWeight =  0.000
     conePenaltyWeight = 0
     copWeight = 10
-    feetCollisionWeight = 10 # 1000
+    feetCollisionWeight = 100 # 1000
     groundColWeight = 0
     footSize = 0.05
     verticalFootVelWeight = 0 # 20

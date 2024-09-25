@@ -20,14 +20,12 @@ import params
 # All these lines are marked with the tag ##0##.
 
 import sys
-print(sys.argv)
 
-walkParams = params.WalkBattobotParams('open')
+walkParams = params.StairsBattobotParams('open')
 if len(sys.argv) > 1:
     WS = bool(sys.argv[1])
     walkParams.saveFile = sys.argv[2]
     walkParams.guessFile = sys.argv[3] if sys.argv[3] != "" else None
-    # base_height = round(float(sys.argv[4])*1e-3, 5)
     base_height = 0.575
     comWeight = int(sys.argv[4])
     walkParams.comWeight = comWeight
@@ -36,11 +34,13 @@ if len(sys.argv) > 1:
     autosave = sys.argv[7]
 else:
     WS = False
-    walkParams.saveFile = "/tmp/walk_open.npy"
+    walkParams.saveFile = "/tmp/stairs_virgile_closed.npy"
     if WS:
         walkParams.guessFile = "/tmp/stairs_virgile_open_warmstarted_ws.npy"
         walkParams.saveFile = "/tmp/stairs_virgile_open_warmstarted_warmstarted.npy"
     base_height = 0.575
+    walkParams.vcomRef[0] = 0.4
+    walkParams.comWeight = 1e3
     autosave = False
 
 # #####################################################################################
@@ -49,6 +49,7 @@ else:
 
 robot = loaders.battobot_open(base_height=base_height)
 assert len(walkParams.stateImportance) == robot.model.nv * 2
+assert len(walkParams.stateTerminalImportance) == robot.model.nv * 2
 
 # #####################################################################################
 # ### CONTACT PATTERN #################################################################
@@ -60,6 +61,9 @@ try:
     robot.x0 = ocpConfig["x0"]
     stateTerminalTarget = ocpConfig["stateTerminalTarget"]
 except (KeyError, FileNotFoundError):
+    # When the config file is not found ...
+    # Initial config, also used for warm start, both taken from robot wrapper.
+    # Contact are specified with the order chosen in <contactIds>.
     contactPattern = walkParams.contactPattern
 
 # #####################################################################################
@@ -87,23 +91,20 @@ print(
 # #####################################################################################
 # ### DDP #############################################################################
 # #####################################################################################
-print(robot.model.lowerPositionLimit)
-print(robot.model.upperPositionLimit)
-ddp = sobec.wwt.buildSolver(robot, contactPattern, walkParams, solver='FDDP')
+
+ddp = sobec.wwt.buildStairsSolver(robot, contactPattern, walkParams, solver='FDDP')
 problem = ddp.problem
 x0s, u0s = sobec.wwt.buildInitialGuess(ddp.problem, walkParams)
 ddp.setCallbacks([croc.CallbackVerbose(), croc.CallbackLogger()])
-# import mim_solvers
-# ddp.setCallbacks([mim_solvers.CallbackVerbose(), mim_solvers.CallbackLogger()])
-# ddp.setCallbacks([croc.CallbackVerbose(), croc.CallbackLogger(), sobec.CallbackNumDiff()])
 
 with open("/tmp/virgile-repr.ascii", "w") as f:
     f.write(sobec.reprProblem(ddp.problem))
     print("OCP described in /tmp/virgile-repr.ascii")
 
 croc.enable_profiler()
-ddp.solve(x0s, u0s, 200)
-
+# ddp.alphas = [1.0, 0.1, 0.01]
+# ddp.solve(x0s, u0s, 200, init_reg=0.001)
+ddp.solve(init_xs=x0s, init_us=u0s, maxiter=200, init_reg=1e-3, is_feasible=False)
 # assert sobec.logs.checkGitRefs(ddp.getCallbacks()[1], "refs/virgile-logs.npy")
 
 # ### PLOT ######################################################################
@@ -127,10 +128,10 @@ forceRef = [np.concatenate(fs) for fs in zip(*forceRef)]
 plotter.plotBasis(target)
 plotter.plotTimeCop()
 plotter.plotCopAndFeet(walkParams.footSize, 0.6)
-plt.savefig("virgile-open-cop.png")
 plotter.plotForces(forceRef)
 plotter.plotCom(robot.com0)
 plotter.plotFeet()
+plt.savefig("virgile-closed-feet.png")
 plotter.plotFootCollision(walkParams.footMinimalDistance)
 plotter.plotJointTorques()
 plotter.plotComAndCopInXY()
@@ -138,15 +139,17 @@ print("Run ```plt.ion(); plt.show()``` to display the plots.")
 plt.ion()
 plt.show()
 
-costPlotter = sobec.wwt.plotter.CostPlotter(robot.model, ddp)
-costPlotter.setData()
-costPlotter.plotCosts()
+cost_plotter = sobec.wwt.plotter.CostPlotter(robot.model, ddp)
+cost_plotter.setData()
+cost_plotter.plotCosts()
+plt.show()
 # ## DEBUG ######################################################################
 # ## DEBUG ######################################################################
 # ## DEBUG ######################################################################
 
 pin.SE3.__repr__ = pin.SE3.__str__
 np.set_printoptions(precision=2, linewidth=300, suppress=True, threshold=10000)
+
 if not autosave:
     while input("Press q to quit the visualisation") != "q":
         viz.play(np.array(ddp.xs)[:, : robot.model.nq], walkParams.DT)
@@ -156,8 +159,11 @@ if not autosave:
 else:
     sobec.wwt.save_traj(xs=np.array(sol.xs), us=np.array(sol.us), fs=sol.fs0, acs=sol.acs, n_iter=ddp.iter, filename=walkParams.saveFile)
 
+# imgs = []
+# import time
 # for x in ddp.xs:
 #     viz.display(x[:robot.model.nq])
-    # ims.append( viz.viewer.get_image())
+#     time.sleep(0.05)
+#     imgs.append( viz.viewer.get_image())
 # import imageio # pip install imageio[ffmpeg]
-# imageio.mimsave("/tmp/battobot.mp4", imgs, 1//walkParams.DT)
+# imageio.mimsave("/tmp/battobot.mp4", imgs, fps=1//walkParams.DT)

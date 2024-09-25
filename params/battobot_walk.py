@@ -46,12 +46,12 @@ class WalkBattobotParams:
     ## Define costs
     # * Task specific cost
     vcomWeight = 100
-    vcomRef = np.r_[ 0.5, 0, 0 ]
+    vcomRef = np.r_[ 0.8, 0, 0 ]
     vcomImportance = np.array([1, 0, 0])
 
-    comWeight = 0 
+    comWeight = 0
     comRef = np.r_[ 0, 0, 0]
-    comImportance = np.array([0, 0, 1])
+    comImportance = np.array([0, 1, 0])
 
     comHeightWeight = 0
     comHeightTargets = [np.r_[0.0, 0.0, 0.8]]
@@ -64,8 +64,8 @@ class WalkBattobotParams:
     refMainJointsAtImpactWeight = 0
 
     # * Regularisation costs
-    refStateWeight = 0.2       # /
-    refTorqueWeight = 0.02     # /
+    refStateWeight = 0.1       # /
+    refTorqueWeight = 0.05     # /
     stateTerminalWeight = 1e4
     refForceWeight = 10       # /
 

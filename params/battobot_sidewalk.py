@@ -49,7 +49,7 @@ class SideWalkBattobotParams:
     vcomRef = np.r_[ 0, -0.4, 0 ]
     vcomImportance = np.array([1, 1, 0])
 
-    comWeight = 0 
+    comWeight = 1000 
     comRef = np.r_[ 0, 0, 0]
     comImportance = np.array([0, 0, 1])
 
@@ -64,7 +64,7 @@ class SideWalkBattobotParams:
     refMainJointsAtImpactWeight = 0
 
     # * Regularisation costs
-    refStateWeight = 0.2       # /
+    refStateWeight = 0.3       # /
     refTorqueWeight = 0.02     # /
     stateTerminalWeight = 1e4
     refForceWeight = 10       # /
@@ -74,7 +74,7 @@ class SideWalkBattobotParams:
     coneAxisWeight =  0.000
     conePenaltyWeight = 0
     copWeight = 1
-    feetCollisionWeight = 0 # 1000
+    feetCollisionWeight = 10 # 1000
     groundColWeight = 0
     footSize = 0.05
     verticalFootVelWeight = 0 # 20

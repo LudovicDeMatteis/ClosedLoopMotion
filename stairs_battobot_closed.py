@@ -39,8 +39,6 @@ else:
         walkParams.guessFile = "/tmp/stairs_virgile_open_warmstarted_ws.npy"
         walkParams.saveFile = "/tmp/stairs_virgile_open_warmstarted_warmstarted.npy"
     base_height = 0.575
-    walkParams.vcomRef[0] = 0.4
-    walkParams.comWeight = 1e3
     autosave = False
 
 # #####################################################################################

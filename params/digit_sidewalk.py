@@ -43,7 +43,7 @@ class SideWalkDigitParams(ParamsBase):
     vcomRef = np.r_[ 0, 0.4, 0 ]
     vcomImportance = np.array([1, 1, 0])
 
-    comWeight = 1000 
+    comWeight = 0 
     comRef = np.r_[0, 0, 1] # values are element-wise multiplied by the initial com
     comImportance = np.array([0, 0, 1])
     
@@ -54,7 +54,7 @@ class SideWalkDigitParams(ParamsBase):
     refMainJointsAtImpactWeight = 0
 
     # * Regularisation costs
-    refStateWeight = 0.2       # /
+    refStateWeight = 0.4       # /
     refTorqueWeight = 0.02     # /
     stateTerminalWeight = 1e4
     refForceWeight = 10       # /
@@ -64,7 +64,7 @@ class SideWalkDigitParams(ParamsBase):
     coneAxisWeight =  0.000
     conePenaltyWeight = 0
     copWeight = 10
-    feetCollisionWeight = 100 # 1000
+    feetCollisionWeight = 1000 # 1000
     groundColWeight = 0
     footSize = 0.05
     verticalFootVelWeight = 0 # 20
@@ -129,5 +129,5 @@ class SideWalkDigitParams(ParamsBase):
         )
         velocityTarget = np.zeros(2*len(legVWeights))
         velocityTarget[np.nonzero(legVWeights*2)] = 1
-        self.stateTerminalImportance = np.array([0, 0, 0, 0, 0, 0] + [0] * (2*len(legVWeights)) + [0, 0, 0, 0, 0, 0] + velocityTarget.tolist())
+        self.stateTerminalImportance = np.array([0, 0, 0, 0, 0, 10] + [1] * (2*len(legVWeights)) + [0, 0, 0, 0, 0, 0] + velocityTarget.tolist())
         self.controlImportance = np.array([1] * 12)

@@ -177,6 +177,12 @@ def battobot_closed(export_joints_ids=False, base_height=0.575):
     model.upperPositionLimit[10] = 0.311
     model.lowerPositionLimit[37] = -0.311
 
+    Kp = 1000
+    Kd = 100
+    for c in robot_constraint_models:
+        c.corrector.Kp[:] = Kp * np.ones(6)
+        c.corrector.Kd[:] = Kd * np.ones(6)
+
     robot = sobec.wwt.RobotWrapper(model, contactKey="foot_frame", closed_loop=True)
     robot.collision_model = collision_model
     robot.visual_model = visual_model
@@ -197,3 +203,53 @@ def battobot_closed(export_joints_ids=False, base_height=0.575):
         )
     else:
         return robot
+
+if __name__ == "__main__":
+    from utils.vizutils import traj_cam_linear, visualizeConstraints
+    import meshcat
+    from pinocchio.visualize import MeshcatVisualizer
+    import time
+
+    robot, (SERIAL_JOINT_IDS_Q,
+            SERIAL_JOINT_IDS_V,
+            LOOP_JOINT_IDS_Q,
+            LOOP_JOINT_IDS_V) = battobot_closed(export_joints_ids=True, base_height=0.575)
+    model = robot.model
+    data = model.createData()
+    qclosed = robot.x0[:model.nq]
+    qopen = pin.neutral(model)
+    qopen[SERIAL_JOINT_IDS_Q] = qclosed[SERIAL_JOINT_IDS_Q]
+    zoom_pos = [0.2, -0.3, 0.4]
+    start_pos = [0.8, -0.8, 0.6]
+    traj1 = traj_cam_linear(start_pos, zoom_pos, T=180)
+    traj2 = traj_cam_linear(zoom_pos, start_pos, T=180)
+    viz = MeshcatVisualizer(robot.model, robot.collision_model, robot.visual_model)
+    viz.viewer = meshcat.Visualizer(zmq_url="tcp://127.0.0.1:6000")
+    viz.clean()
+    viz.loadViewerModel(rootNodeName="universe")
+
+    fps = 60
+    images = []
+    travelTime = 3
+    viz.display(qopen)
+    images.append(viz.viewer.get_image())
+
+    for t in traj1:
+        viz.setCameraPosition(t)
+        time.sleep(1/fps)
+        images.append(viz.viewer.get_image())
+
+    visualizeConstraints(viz, model, data, robot.loop_constraints_models, qopen)
+    for t in range(2*fps):
+        images.append(viz.viewer.get_image())
+        time.sleep(1/fps)
+    visualizeConstraints(viz, model, data, robot.loop_constraints_models, qclosed)
+    viz.display(qclosed)
+    for t in range(3*fps):
+        images.append(viz.viewer.get_image())
+        time.sleep(1/fps)
+
+    for t in traj2:
+        viz.setCameraPosition(t)
+        images.append(viz.viewer.get_image())
+        time.sleep(1/fps)
