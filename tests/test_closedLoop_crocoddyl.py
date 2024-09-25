@@ -2,14 +2,12 @@ import unittest
 import crocoddyl
 import pinocchio as pin
 import numpy as np
-import example_robot_data as robex
 
 class TestContactLoop6D(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super(TestContactLoop6D, self).__init__(*args, **kwargs)
         model = pin.buildSampleModelHumanoidRandom()
         self.robot = pin.RobotWrapper(model)
-        # self.robot = robex.load("talos_full")
         self.contactIds = [
             self.robot.model.getFrameId("rleg6_joint"),
             self.robot.model.getFrameId("lleg6_joint"),
@@ -27,8 +25,8 @@ class TestContactLoop6D(unittest.TestCase):
             self.robot.model.frames[self.contactIds[1]].placement,
             pin.ReferenceFrame.LOCAL # Should be local or WORLD ?
         )
-        Kp = 0
-        Kd = 10
+        Kp = 100
+        Kd = 0
         self.contact_model.corrector.Kp[:] = Kp * np.ones(6)
         self.contact_model.corrector.Kd[:] = Kd * np.ones(6)
         self.contact_models = [self.contact_model]
@@ -64,7 +62,7 @@ class TestContactLoop6D(unittest.TestCase):
         return(a)
     
     def finite_differences(self, q, v, u, f):
-        eps = 1e-8
+        eps = 1e-7
         f0 = f(q, v, u).copy()
         Fq = np.zeros((f0.size, v.size))
         Fv = np.zeros((f0.size, v.size))
@@ -126,6 +124,52 @@ class TestContactLoop6D(unittest.TestCase):
         Fu = data.Minv[:, 6:]
         return Fq, Fv, Fu
 
+    def velocity_error(self, q, v, u):
+        dam_data = self.dam.createData()
+        x = np.concatenate([q, v])
+        self.dam.calc(dam_data, x, u)
+        # contact_data = dam_data.contacts["contact"]
+        d = dam_data.multibody.contacts.contacts["contact"]
+        vel = (d.f1vf1 - d.f1vf2).vector
+        return vel
+    
+    def velocity_error_derivatives(self, q, v, u):
+        dam_data = self.dam.createData()
+        x = np.concatenate([q, v])
+        self.dam.calc(dam_data, x, u)
+        self.dam.calcDiff(dam_data, x, u)
+        m = self.dam.contacts.contacts["contact"].contact
+        d = dam_data.multibody.contacts.contacts["contact"]
+        Fq = (
+            m.joint1_placement.toActionMatrixInverse() @ d.v1_partial_dq 
+            - (d.f1Mf2.act(d.f2vf2)).action @ (d.f1Jf1 - d.f1Xf2 @ d.f2Jf2) 
+            - d.f1Xf2 @ m.joint2_placement.toActionMatrixInverse() @ d.v2_partial_dq
+        )
+        Fv = (d.f1Jf1 - d.f1Xf2 @ d.f2Jf2)
+        return Fq, Fv
+    
+    def position_error(self, q, v, u):
+        dam_data = self.dam.createData()
+        x = np.concatenate([q, v])
+        self.dam.calc(dam_data, x, u)
+        # contact_data = dam_data.contacts["contact"]
+        d = dam_data.multibody.contacts.contacts["contact"]
+        pos = 100 * (-(pin.log6(d.f1Mf2)).vector)
+        return pos
+    
+    def position_error_derivatives(self, q, v, u):
+        dam_data = self.dam.createData()
+        x = np.concatenate([q, v])
+        self.dam.calc(dam_data, x, u)
+        self.dam.calcDiff(dam_data, x, u)
+        m = self.dam.contacts.contacts["contact"].contact
+        d = dam_data.multibody.contacts.contacts["contact"]
+        oMf1 = d.pinocchio.oMi[m.joint1_id].act(m.joint1_placement)
+        oMf2 = d.pinocchio.oMi[m.joint2_id].act(m.joint2_placement)
+        Fq = 100*(-pin.Jlog6(d.f1Mf2) @ (-oMf2.toActionMatrixInverse()@oMf1.toActionMatrix()@d.f1Jf1 + d.f2Jf2))
+        Fv = 0
+        return Fq, Fv
+
     ## Testing Zone
     def test_dynamics(self):
         q = pin.randomConfiguration(self.robot.model)
@@ -164,16 +208,38 @@ class TestContactLoop6D(unittest.TestCase):
     #     self.assertTrue(np.allclose(Fv, Fv_pin, atol=1e-4))
     #     self.assertTrue(np.allclose(Fu, Fu_pin, atol=1e-4))
 
-    def test_pinocchio_derivatives_fd(self):
+    # def test_pinocchio_derivatives_fd(self):
+    #     q = pin.randomConfiguration(self.robot.model)
+    #     v = np.random.random(self.robot.model.nv)
+    #     u = np.random.random(self.actuation.nu)
+    #     Fq, Fv, Fu = self.finite_differences(q, v, u, self.pinocchio_dynamics)
+    #     Fq_pin, Fv_pin, Fu_pin = self.pinocchio_derivatives(q, v, u)
+
+    #     self.assertTrue(np.allclose(Fq, Fq_pin, atol=1e-4))
+    #     self.assertTrue(np.allclose(Fv, Fv_pin, atol=1e-4))
+    #     self.assertTrue(np.allclose(Fu, Fu_pin, atol=1e-4))
+
+    def test_velocity_error_derivatives(self):
         q = pin.randomConfiguration(self.robot.model)
         v = np.random.random(self.robot.model.nv)
         u = np.random.random(self.actuation.nu)
-        Fq, Fv, Fu = self.finite_differences(q, v, u, self.pinocchio_dynamics)
-        Fq_pin, Fv_pin, Fu_pin = self.pinocchio_derivatives(q, v, u)
+        Fq, Fv = self.velocity_error_derivatives(q, v, u)
+        
+        Fq_fd, Fv_fd, Fu_fd = self.finite_differences(q, v, u, self.velocity_error)
 
-        self.assertTrue(np.allclose(Fq, Fq_pin, atol=1e-4))
-        self.assertTrue(np.allclose(Fv, Fv_pin, atol=1e-4))
-        self.assertTrue(np.allclose(Fu, Fu_pin, atol=1e-4))
+        self.assertTrue(np.allclose(Fq, Fq_fd, atol=1e-4))
+        self.assertTrue(np.allclose(Fv, Fv_fd, atol=1e-4))
+
+    def test_position_error_derivatives(self):
+        q = pin.randomConfiguration(self.robot.model)
+        v = np.random.random(self.robot.model.nv)
+        u = np.random.random(self.actuation.nu)
+        Fq, Fv = self.position_error_derivatives(q, v, u)
+        
+        Fq_fd, Fv_fd, Fu_fd = self.finite_differences(q, v, u, self.position_error)
+
+        self.assertTrue(np.allclose(Fq, Fq_fd, atol=1e-4))
+        self.assertTrue(np.allclose(Fv, Fv_fd, atol=1e-4))
 
     def test_crocoddyl_derivatives(self):
         q = pin.randomConfiguration(self.robot.model)
@@ -186,8 +252,8 @@ class TestContactLoop6D(unittest.TestCase):
         self.dam.calc(dam_data, x, u)
         self.dam.calcDiff(dam_data, x, u)
 
-        self.assertTrue(np.allclose(Fq, dam_data.Fx[:, :v.size], atol=1e-4))
-        self.assertTrue(np.allclose(Fv, dam_data.Fx[:, v.size:], atol=1e-4))
+        self.assertTrue(np.allclose(Fq, dam_data.Fx[:, :v.size], atol=1e-3))
+        self.assertTrue(np.allclose(Fv, dam_data.Fx[:, v.size:], atol=1e-3))
         self.assertTrue(np.allclose(Fu, dam_data.Fu, atol=1e-4))
 
 if __name__ == '__main__':

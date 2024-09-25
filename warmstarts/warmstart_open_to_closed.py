@@ -6,10 +6,10 @@ import meshcat
 from pinocchio.visualize import MeshcatVisualizer
 import time as time
 
-from loaders.loaders_virgile import load_complete_open, load_complete_closed
+import loaders
 import sobec
 from sobec.walk_without_think.actuation_matrix import ActuationModelMatrix
-import specific_params
+import params
 
 from tqdm import tqdm
 
@@ -20,26 +20,13 @@ def getClosedWarmstart(ws_file, autosave=False, base_height=0.575, slope=0.0, ve
     fs_open = np.array(ws["fs"])
     acs_open = np.array(ws["acs"])
 
-    walkParams = specific_params.WalkBattobotParams()
+    walkParams = params.StairsBattobotParams('open')
     walkParams.vcomRef[0] = velocity
     walkParams.comWeight = comWeight
     walkParams.slope = slope
 
-    cycle = ( [[1, 0]] * walkParams.Tsingle
-                + [[1, 1]] * walkParams.Tdouble
-                + [[0, 1]] * walkParams.Tsingle
-                + [[1, 1]] * walkParams.Tdouble
-                )
-    contactPattern = (
-        []
-        + [[1, 1]] * walkParams.Tstart
-        + (cycle * 4)
-        + [[1, 1]] * walkParams.Tend
-        + [[1, 1]]
-    )
-
-    robot_open = load_complete_open(base_height=base_height)
-    robot_closed, (SER_Q, SER_V, LOOP_Q, LOOP_V) = load_complete_closed(export_joints_ids=True, base_height=base_height)
+    robot_open = loaders.battobot_open(base_height=base_height)
+    robot_closed, (SER_Q, SER_V, LOOP_Q, LOOP_V) = loaders.battobot_closed(export_joints_ids=True, base_height=base_height)
 
     viz = MeshcatVisualizer(robot_closed.model, robot_closed.collision_model, robot_closed.visual_model)
     viz.viewer = meshcat.Visualizer(zmq_url="tcp://127.0.0.1:6000")
@@ -55,7 +42,7 @@ def getClosedWarmstart(ws_file, autosave=False, base_height=0.575, slope=0.0, ve
         act_matrix_closed[iv, iu] = 1
 
     T = np.shape(xs_open)[0]
-    assert(T == len(contactPattern))
+    assert(T == len(walkParams.contactPattern))
     nq_open, nv_open = robot_open.model.nq, robot_open.model.nv
     nq_closed, nv_closed = robot_closed.model.nq, robot_closed.model.nv
     nu_open = act_matrix_open.shape[1]
@@ -91,7 +78,7 @@ def getClosedWarmstart(ws_file, autosave=False, base_height=0.575, slope=0.0, ve
     for i in SER_V[12:]:
         weights_state[i + nv_closed] = 1 # Left leg
 
-    for t, pattern in tqdm(enumerate(contactPattern[:-1])):
+    for t, pattern in tqdm(enumerate(walkParams.contactPattern[:-1])):
         contact_stack = crocoddyl.ContactModelMultiple(state, actuation.nu)
         for i, cm in enumerate(robot_closed.loop_constraints_models):
             contact = crocoddyl.ContactModel6DLoop(
@@ -102,7 +89,7 @@ def getClosedWarmstart(ws_file, autosave=False, base_height=0.575, slope=0.0, ve
                 cm.joint2_placement,
                 pin.LOCAL,
                 actuation.nu,
-                np.array([0., 0.]),
+                np.array([cm.corrector.Kp[0], cm.corrector.Kd[0]]),
             )
             contact_stack.addContact(f"contact_robot_{i}", contact)
         for k, cid in enumerate(robot_closed.contactIds):
@@ -200,7 +187,7 @@ if __name__ == "__main__":
         s = round(float(sys.argv[5])*1e-4, 5)
         autosave = sys.argv[6]
     else:
-        ws_file = "/tmp/stairs_virgile_open_10000.npy"
+        ws_file = "/tmp/stairs_virgile_closed.npy"
         save_file = "/tmp/stairs_virgile_closed_ws.npy"
         b = 0.575
         w = 500
