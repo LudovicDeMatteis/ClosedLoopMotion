@@ -1,2 +1,19 @@
 # ClosedLoopMotion
-Examples of motion of robot with closed kinematic loops
+Examples of motion of robot with closed kinematic loops.
+The repo is based on methods described in ICRA 2025 paper - in review (TODO add paper reference).
+
+## Dependencies
+To build this projects, the following are required :
+* [example-parallel-robots](https://github.com/Gepetto/example-parallel-robots)
+
+## Table of contents 
+* The repo contains utility loaders based on [example-parallel-robots](https://github.com/Gepetto/example-parallel-robots), included in the `loaders` folder. Current version supports Battobot and Digit. The models of Disney robot and Kangaroo are to be fixed and added (cf [Future Improvements](#future-improvements))
+* Params for different motions on included in folder `params`.
+* The folder `tests` contains tests on crocoddyl functions.
+* Other scripts are examples of motions on different robots, named `{motion}_{robot}_{open/closed}.py`
+
+
+## Future Improvements
+We list in arbitrary order the expected improvements
+* Adding new robot models (Disney robot, Kangaroo...)
+* Adding new motions (half-turn, flip, running...)
