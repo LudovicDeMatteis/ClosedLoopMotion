@@ -122,25 +122,6 @@ class StairsBattobotParams:
             self.footTrajectories[self.Tstart + 3*self.Tsingle//5 + self.Tdouble + self.Tsingle + i*self.Tcycle] = np.array([[0, 0, 1.2 * nextFloor], [0, 0, 0]])
             self.footTrajImportance[self.Tstart + 3*self.Tsingle//5 + self.Tdouble + self.Tsingle + i*self.Tcycle] = np.array([[0, 0, 1], [0, 0, 0]])
         
-        init_time = self.Tstart
-        init_height = 0
-        # for i in range(self.ncycle):
-            # next_time = init_time + 3*self.Tsingle//4
-            # self.groundAltitude[init_time:next_time] = init_height * np.ones(next_time - init_time)
-            # init_time = next_time
-            # init_height = self.groundHeight[init_time + self.Tsingle//4]
-            # next_time = init_time + self.Tsingle + self.Tdouble
-            # self.groundAltitude[init_time:next_time] = init_height * np.ones(next_time - init_time)
-            # init_time = next_time
-            # init_height = self.groundHeight[init_time + self.Tsingle//4]
-        # self.groundAltitude[init_time:] = init_height * np.ones(self.Ttotal - init_time)
-
-        import matplotlib.pyplot as plt
-        plt.figure()
-        plt.plot(self.footTrajectories[:, :, 2])
-        plt.savefig("foot_steps.png")
-        input()
-
         if model_type == "open":
             basisQWeights = [0,0,0,50,50,0]
             legQWeights = [
