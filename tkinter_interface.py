@@ -1,4 +1,5 @@
 import tkinter as tk
+import numpy as np
 
 def create_button_grid(button_names, button_width=10, button_height=2, font_size=12):
     def on_button_click(button_id):
@@ -64,6 +65,44 @@ def ask_for_parameters(param_names, param_ranges, default_values):
     submit_button.grid(row=len(param_names), column=0, columnspan=2, pady=10)
 
     param_window.mainloop()
+
+    parameter_choices = [float(p) for p in parameter_choices]
     
     return parameter_choices
 
+def result_interface(robot, ddp, sol, params):
+    from motions.utils import plot_solution, create_viewer
+    viz = create_viewer(robot, open=True)
+    qs = np.array(ddp.xs)[:, :robot.model.nq]
+
+    def on_plots_button_click():
+        plot_solution(robot, ddp, sol, params)
+    
+    def on_replay_button_click():
+        viz.play(qs, params.DT)
+
+    def on_quit_button_click():
+        root.quit()
+
+    # Create the main window
+    root = tk.Tk()
+    root.title("Results Interface")
+
+    # Create a frame to hold the buttons
+    main_frame = tk.Frame(root)
+    main_frame.pack(padx=10, pady=10)
+
+    # Create main buttons
+    plot_button = tk.Button(main_frame, text="Show plots", command=on_plots_button_click, width=15, height=3, font=("Arial", 12))
+    traj_button = tk.Button(main_frame, text="Replay trajectory", command=on_replay_button_click, width=15, height=3, font=("Arial", 12))
+
+    # Create small button
+    quit_button = tk.Button(main_frame, text="Quit", command=on_quit_button_click, width=10, height=2, font=("Arial", 10))
+
+    # Arrange buttons in the frame
+    plot_button.grid(row=0, column=0, padx=5, pady=5)
+    traj_button.grid(row=0, column=1, padx=5, pady=5)
+    quit_button.grid(row=1, column=0, columnspan=2, pady=(10, 0))
+
+    # Start the Tkinter event loop
+    root.mainloop()

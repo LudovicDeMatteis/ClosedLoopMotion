@@ -1,4 +1,5 @@
-from tkinter_interface import create_button_grid, ask_for_parameters
+from tkinter_interface import create_button_grid, ask_for_parameters, result_interface
+from motions import scripts
 
 if __name__ == "__main__":
     motions = ["Walk", "Jump", "Side walk", "Walk stairs"]
@@ -84,3 +85,8 @@ if __name__ == "__main__":
 
     params_user = ask_for_parameters(param_names, param_ranges, param_default)
     print("Parameters chosen:", params_user)
+
+    # Running corresponding script
+    motion_solver = scripts[motions[motion_id]][robots[robot_id]]
+    robot, ddp, sol, params = motion_solver(*params_user)
+    result_interface(robot, ddp, sol, params)
