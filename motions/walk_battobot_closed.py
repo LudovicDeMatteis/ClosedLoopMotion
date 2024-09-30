@@ -11,9 +11,11 @@ import params
 
 def walk_battobot_closed(com_vel, n_steps, ss_duration, ds_duration, com_weight, external_run=True, guessFile=None, saveFile=None):
     walkParams = params.WalkBattobotParams('closed')
+    print(walkParams.vcomRef)
     walkParams.vcomRef[0] = com_vel
     walkParams.Tsingle = int(ss_duration / walkParams.DT)
     walkParams.Tdouble = int(ds_duration / walkParams.DT)
+    print(walkParams.vcomRef)
     walkParams.cycle = ( [[1, 0]] * walkParams.Tsingle
                         + [[1, 1]] * walkParams.Tdouble
                         + [[0, 1]] * walkParams.Tsingle
@@ -88,7 +90,7 @@ def walk_battobot_closed(com_vel, n_steps, ss_duration, ds_duration, com_weight,
 
 if __name__ == "__main__":
     from motions.utils import plot_solution, create_viewer
-    robot, ddp, sol, params = walk_battobot_closed(0.7, 4, 0.4, 0.01, 0)
+    robot, ddp, sol, params = walk_battobot_closed(0.7, 4, 0.4, 0.02, 0)
 
     plot_solution(robot, ddp, sol, params)
 

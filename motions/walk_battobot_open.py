@@ -51,10 +51,6 @@ def walk_battobot_open(com_vel, n_steps, ss_duration, ds_duration, com_weight, e
     except (KeyError, FileNotFoundError):
         contactPattern = walkParams.contactPattern
 
-    # #####################################################################################
-    # ### VIZ #############################################################################
-    # ####################################################################################
-
     q0 = robot.x0[: robot.model.nq]
     print(
         "Start from q0=",
