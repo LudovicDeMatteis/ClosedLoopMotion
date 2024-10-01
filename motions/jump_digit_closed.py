@@ -9,21 +9,21 @@ import sobec
 import loaders
 import params
 
-def jump_digit_closed(jump_duration, guessFile, saveFile):
+def jump_digit_closed(jump_duration, guessFile=None, saveFile=None):
     walkParams = params.JumpDigitParams('closed')
-    walkParams.TFlyUp = ((jump_duration / 2) / walkParams.DT)
+    walkParams.TFlyUp = int((jump_duration / 2) / walkParams.DT)
     walkParams.TFlyDown = walkParams.TFlyUp
     walkParams.TFly = walkParams.TFlyUp + walkParams.TFlyDown
-    contactPattern = (
+    walkParams.contactPattern = contactPattern = (
         []
-        + [[1, 1]] * (walkParams.TStand + walkParams.TPush)
-        + [[0, 0]] * (walkParams.TFlyUp + walkParams.TFlyDown)
-        + [[1, 1]] * (walkParams.TLand + walkParams.Tend)
+        + [[1, 1]] * int(walkParams.TStand + walkParams.TPush)
+        + [[0, 0]] * int(walkParams.TFlyUp + walkParams.TFlyDown)
+        + [[1, 1]] * int(walkParams.TLand + walkParams.Tend)
     )
     Ttotal = len(contactPattern)
     TMid = walkParams.Tstart + walkParams.TFlyUp
     
-    base_height = 0.575
+    base_height = 0.6
 
     # #####################################################################################
     # ### LOAD ROBOT ######################################################################

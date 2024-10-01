@@ -5,6 +5,7 @@ def roundToOdd(x):
     Round a number to the nearest odd number.
     For double support phase, taking an odd number of steps is better.
     '''
+    x = np.max([x, 1])
     return 2 * int(np.round(x / 2 - 0.5001)) + 1
 
 class WalkBattobotParams:
@@ -46,17 +47,13 @@ class WalkBattobotParams:
     ## Define costs
     # * Task specific cost
     vcomWeight = 100
-    vcomRef = np.r_[ 0.8, 0, 0 ]
+    vcomRef = np.r_[ 0.6, 0, 0 ]
     vcomImportance = np.array([1, 0, 0])
 
-    comWeight = 0
-    comRef = np.r_[ 0, 0, 0]
-    comImportance = np.array([0, 1, 0])
+    comWeight = 1000
+    comRef = np.r_[ 0, 0, 1]
+    comImportance = np.array([0, 0, 1])
 
-    comHeightWeight = 0
-    comHeightTargets = [np.r_[0.0, 0.0, 0.8]]
-    comHeightTimes = []
-    
     # * Impact Time costs
     impactAltitudeWeight = 1e4  # /
     impactRotationWeight = 1e4  # /
@@ -64,8 +61,8 @@ class WalkBattobotParams:
     refMainJointsAtImpactWeight = 0
 
     # * Regularisation costs
-    refStateWeight = 0.1       # /
-    refTorqueWeight = 0.05     # /
+    refStateWeight = 1       # /
+    refTorqueWeight = 0.02     # /
     stateTerminalWeight = 1e4
     refForceWeight = 10       # /
 
@@ -73,8 +70,8 @@ class WalkBattobotParams:
     centerOfFrictionWeight = 0
     coneAxisWeight =  0.000
     conePenaltyWeight = 0
-    copWeight = 1
-    feetCollisionWeight = 0 # 1000
+    copWeight = 10
+    feetCollisionWeight = 100 # 1000
     groundColWeight = 0
     footSize = 0.05
     verticalFootVelWeight = 0 # 20
@@ -106,14 +103,14 @@ class WalkBattobotParams:
         if model_type == "open":
             basisQWeights = [0,0,0,50,50,0]
             legQWeights = [
-                20, 10, 1, # hip z, x, y
-                4, # knee (passive)
+                10, 3, 1, # hip z, x, y
+                1, # knee (passive)
                 1, 1, # ankle x, y
             ]
             basisVWeights = [0,0,0,3,3,1]
             legVWeights = [
-                10, 5, 1, # hip z, x, y
-                2, # knee (passive)
+                5, 3, 1, # hip z, x, y
+                1, # knee (passive)
                 1, 1, # ankle x, y
             ]
             self.stateImportance = np.array(
@@ -126,8 +123,8 @@ class WalkBattobotParams:
             eps = 0
             basisQWeights = [0,0,0,50,50,0]
             legQWeights = [
-                20, 3, 1, # hip z, x, y
-                4, # knee (passive)
+                10, 3, 1, # hip z, x, y
+                1, # knee (passive)
                 1, 1, # ankle x, y
                 eps, # knee (actuated)
                 eps, eps, eps, # spherical ankle
@@ -141,8 +138,8 @@ class WalkBattobotParams:
             ]
             basisVWeights = [0,0,0,3,3,1]
             legVWeights = [
-                10, 3, 1, # hip z, x, y
-                2, # knee (passive)
+                5, 3, 1, # hip z, x, y
+                1, # knee (passive)
                 1, 1, # ankle x, y
                 eps, # knee (actuated)
                 eps, eps, eps, # spherical ankle

@@ -104,11 +104,10 @@ class StairsBattobotParams:
     preview = True
     save = False
 
-    def __init__(self, model_type="open"):
-        # Stairs parameters
-        self.footTrajectoryWeight = 1e6
-        slope = 0.1
-        self.groundHeight = [slope * t * self.DT for t in range(self.Ttotal)]
+    slope = 0.1
+    footTrajectoryWeight = 1e6
+    def get_foot_trajectories(self):
+        self.groundHeight = [self.slope * t * self.DT for t in range(self.Ttotal)]
         # print(self.groundHeight)
         # input()
         self.groundAltitude = [0] * self.Ttotal
@@ -121,7 +120,9 @@ class StairsBattobotParams:
             nextFloor = self.groundHeight[self.Tstart + 2*self.Tsingle + self.Tdouble + i*self.Tcycle]
             self.footTrajectories[self.Tstart + 3*self.Tsingle//5 + self.Tdouble + self.Tsingle + i*self.Tcycle] = np.array([[0, 0, 1.2 * nextFloor], [0, 0, 0]])
             self.footTrajImportance[self.Tstart + 3*self.Tsingle//5 + self.Tdouble + self.Tsingle + i*self.Tcycle] = np.array([[0, 0, 1], [0, 0, 0]])
-        
+
+    def __init__(self, model_type="open"):
+        self.get_foot_trajectories()
         if model_type == "open":
             basisQWeights = [0,0,0,50,50,0]
             legQWeights = [

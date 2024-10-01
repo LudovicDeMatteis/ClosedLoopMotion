@@ -14,7 +14,7 @@ def walk_battobot_closed(com_vel, n_steps, ss_duration, ds_duration, com_weight,
     print(walkParams.vcomRef)
     walkParams.vcomRef[0] = com_vel
     walkParams.Tsingle = int(ss_duration / walkParams.DT)
-    walkParams.Tdouble = int(ds_duration / walkParams.DT)
+    walkParams.Tdouble = params.roundToOdd(int(ds_duration / walkParams.DT))
     print(walkParams.vcomRef)
     walkParams.cycle = ( [[1, 0]] * walkParams.Tsingle
                         + [[1, 1]] * walkParams.Tdouble

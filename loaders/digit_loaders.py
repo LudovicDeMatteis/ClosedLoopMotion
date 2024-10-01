@@ -164,8 +164,8 @@ def digit_closed(export_joints_ids=False, base_height=0.600):
     )
 
     model.referenceConfigurations["half_sitting"] = q0
-    model.frames[18].name = "foot_frame_right"
-    model.frames[62].name = "foot_frame_left"
+    model.frames[19].name = "foot_frame_right"
+    model.frames[66].name = "foot_frame_left"
 
     robot = sobec.wwt.RobotWrapper(model, contactKey="foot_frame", closed_loop=True)
     robot.collision_model = collision_model
