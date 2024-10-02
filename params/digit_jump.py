@@ -138,11 +138,5 @@ class JumpDigitParams(ParamsBase):
         referenceForces += [np.array([fland, fland]) for _ in range(self.TLand)]
         referenceForces += [np.array([1/2, 1/2])*grav for _ in range(self.Tend)]
 
-        # import matplotlib.pyplot as plt
-        # plt.figure()
-        # plt.plot(referenceForces)
-        # plt.savefig("ref_forces.png")
-        # plt.show()
-
         self.referenceForces = referenceForces
         return referenceForces

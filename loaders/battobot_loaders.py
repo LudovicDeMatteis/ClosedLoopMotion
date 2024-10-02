@@ -74,8 +74,8 @@ def battobot_open(base_height=0.575):
     robot_constraint_models = [] # Reset the robot constraint models (empty for open loop)
 
     model.referenceConfigurations["half_sitting"] = Q0_SHARED
-    model.frames[38].name = "foot_frame_right"
-    model.frames[76].name = "foot_frame_left"
+    model.frames[15].name = "foot_frame_right"
+    model.frames[62].name = "foot_frame_left"
 
     # Add joint limits
     model.upperPositionLimit[10] = 0.311
@@ -170,15 +170,15 @@ def battobot_closed(export_joints_ids=False, base_height=0.575):
 
     model.referenceConfigurations["half_sitting"] = q0
 
-    model.frames[14].name = "foot_frame_right"
-    model.frames[58].name = "foot_frame_left"
+    model.frames[15].name = "foot_frame_right"
+    model.frames[62].name = "foot_frame_left"
 
     # Add joint limits
     model.upperPositionLimit[10] = 0.311
     model.lowerPositionLimit[37] = -0.311
 
-    Kp = 1000
-    Kd = 100
+    Kp = 0
+    Kd = 0
     for c in robot_constraint_models:
         c.corrector.Kp[:] = Kp * np.ones(6)
         c.corrector.Kd[:] = Kd * np.ones(6)
