@@ -60,9 +60,7 @@ def jump_battobot_closed(jump_duration, guessFile=None, saveFile=None):
     x0s, u0s = sobec.wwt.buildInitialGuess(ddp.problem, walkParams)
     ddp.setCallbacks([croc.CallbackVerbose(), croc.CallbackLogger()])
 
-    with open("/tmp/virgile-repr.ascii", "w") as f:
-        f.write(sobec.reprProblem(ddp.problem))
-        print("OCP described in /tmp/virgile-repr.ascii")
+
 
     croc.enable_profiler()
     ddp.solve(x0s, u0s, 200)

@@ -71,9 +71,7 @@ def walk_digit_closed(com_vel, n_steps, ss_duration, ds_duration, com_weight, ex
     x0s, u0s = sobec.wwt.buildInitialGuess(ddp.problem, walkParams)
     ddp.setCallbacks([croc.CallbackVerbose(), croc.CallbackLogger()])
 
-    with open("/tmp/virgile-repr.ascii", "w") as f:
-        f.write(sobec.reprProblem(ddp.problem))
-        print("OCP described in /tmp/virgile-repr.ascii")
+
 
     croc.enable_profiler()
     ddp.solve(x0s, u0s, walkParams.solver_maxiter)
