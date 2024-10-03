@@ -36,12 +36,15 @@ def plot_solution(robot, ddp, sol, walkParams):
     plt.ion()
     plt.show()
 
-def create_viewer(robot, adress="127.0.0.1", port=6000, open=False):
+def create_viewer(robot, adress="127.0.0.1", port=6000, open=True):
     try:
         import meshcat
         from pinocchio.visualize import MeshcatVisualizer
         viz = MeshcatVisualizer(robot.model, robot.collision_model, robot.visual_model)
-        viz.viewer = meshcat.Visualizer(zmq_url="tcp://{}:{}".format(adress, port))
+        if open:
+            viz.initViewer(open=True)
+        else:
+            viz.viewer = meshcat.Visualizer(zmq_url="tcp://{}:{}".format(adress, port))
         viz.clean()
         viz.loadViewerModel(rootNodeName="universe")
 
