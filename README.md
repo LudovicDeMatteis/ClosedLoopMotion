@@ -29,9 +29,8 @@ docker run --rm --network host -it gitlab.laas.fr:4567/ldematteis/nix-closedloop
 ```
 - Inside the docker
 ```
-[nix-shell:~]$ git clone https://github.com/LudovicDeMatteis/ClosedLoopMotion
-[nix-shell:~]$ cd ClosedLoopMotion/
-
+git clone https://github.com/LudovicDeMatteis/ClosedLoopMotion
+cd ClosedLoopMotion/
 ```
 ### From source
 To use this project, following dependencies are required:
