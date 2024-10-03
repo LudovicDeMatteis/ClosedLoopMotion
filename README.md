@@ -17,22 +17,28 @@ This repo illustrates methods proposed in [ICRA 2025 submission](https://gepetto
 }
 ```
 
-## Dependencies
-To build this projects, the following are required :
+## Installation
+### Using docker
+- Pull the docker image
+```
+docker pull gitlab.laas.fr:4567/ldematteis/nix-closedloopmotion
+```
+- Run the docker image 
+```
+docker run --rm --network host -it gitlab.laas.fr:4567/ldematteis/nix-closedloopmotion:latest
+```
+- Inside the docker
+```
+[nix-shell:~]$ git clone https://github.com/LudovicDeMatteis/ClosedLoopMotion
+[nix-shell:~]$ cd ClosedLoopMotion/
+
+```
+### From source
+To use this project, following dependencies are required:
 * [Crocoddyl fork](https://github.com/LudovicDeMatteis/crocoddyl/tree/topic/contact-6D-closed-loop) on branch `topic/contact-6D-closed-loop`
 * [sobec](https://github.com/LudovicDeMatteis/sobec/tree/icra-2025) on branch `icra_2025`
 * [toolbox-parallel-robots](https://github.com/Gepetto/toolbox-parallel-robots)
 * [example-parallel-robots](https://github.com/Gepetto/example-parallel-robots)
-
-We will provide a direct installation as soon as possible
-
-## Table of contents 
-* `loaders` - The repo contains utility loaders based on [example-parallel-robots](https://github.com/Gepetto/example-parallel-robots), included in the `loaders` folder. Current version supports Battobot and Digit. The models of Disney robot and Kangaroo are to be fixed and added (cf [Future Improvements](#future-improvements))
-* `params` - Params for different motions on included in folder `params`.
-* `tests` - This folder contains tests on crocoddyl functions, this should be complete.
-* `motions` - These scripts are examples of motions on different robots, named `{motion}_{robot}_{open/closed}.py`
-* `main.py` creates a GUI using tkinter and asks for a desired motion, desired robot and parameters options.
-* `main_nogui.py` does the same as `main.py` with a text interface (to allow use in docker) 
 
 ## Usage
 Run either
@@ -45,6 +51,15 @@ python main_nogui.py
 ```
 You can then choose the desired motion, the robot and set parameters.
 Once the solver ends, you can replay the final trajectory or show plots of the results.
+Make sure to open the [Meshcat](https://github.com/meshcat-dev/meshcat-python) visualizer at  `http://127.0.0.1:7000/static/`
+
+## Table of contents 
+* `loaders` - The repo contains utility loaders based on [example-parallel-robots](https://github.com/Gepetto/example-parallel-robots), included in the `loaders` folder. Current version supports Battobot and Digit. The models of Disney robot and Kangaroo are to be fixed and added (cf [Future Improvements](#future-improvements))
+* `params` - Params for different motions on included in folder `params`.
+* `tests` - This folder contains tests on crocoddyl functions, this should be complete.
+* `motions` - These scripts are examples of motions on different robots, named `{motion}_{robot}_{open/closed}.py`
+* `main.py` creates a GUI using tkinter and asks for a desired motion, desired robot and parameters options.
+* `main_nogui.py` does the same as `main.py` with a text interface (to allow use in docker) 
 
 ## Future Improvements
 We list in arbitrary order the expected improvements
