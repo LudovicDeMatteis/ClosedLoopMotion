@@ -1,0 +1,158 @@
+{
+  "nodes": {
+    "crocoddyl": {
+      "inputs": {
+        "flake-parts": [
+          "sobec",
+          "flake-parts"
+        ],
+        "nixpkgs": [
+          "sobec",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1727191344,
+        "narHash": "sha256-P/owVeneYWy9UREFHWViNGl4WDU7J9TgrksOSPWhxS0=",
+        "owner": "LudovicDeMatteis",
+        "repo": "crocoddyl",
+        "rev": "257f6081146bec60e3c099909ea2afe7f60ca78f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LudovicDeMatteis",
+        "ref": "topic/contact-6D-closed-loop",
+        "repo": "crocoddyl",
+        "type": "github"
+      }
+    },
+    "example-parallel-robots": {
+      "inputs": {
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1728053331,
+        "narHash": "sha256-iVgYlD5BiPUlhpaUqEsL1ArvwpkMUBv2KJGg7SZwdv4=",
+        "owner": "gepetto",
+        "repo": "example-parallel-robots",
+        "rev": "b6dde257a8bb96798b7d0ce8ef98b9f070dc2dea",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gepetto",
+        "repo": "example-parallel-robots",
+        "type": "github"
+      }
+    },
+    "flake-parts": {
+      "inputs": {
+        "nixpkgs-lib": "nixpkgs-lib"
+      },
+      "locked": {
+        "lastModified": 1727826117,
+        "narHash": "sha256-K5ZLCyfO/Zj9mPFldf3iwS6oZStJcU4tSpiXTMYaaL0=",
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "rev": "3d04084d54bedc3d6b8b736c70ef449225c361b1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "hercules-ci",
+        "repo": "flake-parts",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1727174734,
+        "narHash": "sha256-xa3TynMF5vaWonmTOg/Ejc1Fmo0GkQnCaVRVkBc3z2I=",
+        "owner": "gepetto",
+        "repo": "nixpkgs",
+        "rev": "0ad139a0e4372abc12320c8c92ee90e0e5e296e1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gepetto",
+        "ref": "master",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-lib": {
+      "locked": {
+        "lastModified": 1727825735,
+        "narHash": "sha256-0xHYkMkeLVQAMa7gvkddbPqpxph+hDzdu1XdGPJR+Os=",
+        "type": "tarball",
+        "url": "https://github.com/NixOS/nixpkgs/archive/fb192fec7cc7a4c26d51779e9bab07ce6fa5597a.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://github.com/NixOS/nixpkgs/archive/fb192fec7cc7a4c26d51779e9bab07ce6fa5597a.tar.gz"
+      }
+    },
+    "root": {
+      "inputs": {
+        "example-parallel-robots": "example-parallel-robots",
+        "flake-parts": "flake-parts",
+        "nixpkgs": "nixpkgs",
+        "sobec": "sobec",
+        "toolbox-parallel-robots": "toolbox-parallel-robots"
+      }
+    },
+    "sobec": {
+      "inputs": {
+        "crocoddyl": "crocoddyl",
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1728053809,
+        "narHash": "sha256-aOOShrwHkzBuo37hHHdbpdOClzWBgTlYwGHb//VUZ+U=",
+        "owner": "LudovicDeMatteis",
+        "repo": "sobec",
+        "rev": "ba01447e56910d6f7b3b246575668bbb1812af20",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LudovicDeMatteis",
+        "ref": "icra-2025",
+        "repo": "sobec",
+        "type": "github"
+      }
+    },
+    "toolbox-parallel-robots": {
+      "inputs": {
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1728053707,
+        "narHash": "sha256-3tdg7Yv6lHHrS7EYIizvAsuwzlD42AbYi3Ul2hElors=",
+        "owner": "gepetto",
+        "repo": "toolbox-parallel-robots",
+        "rev": "eb83bfef5c97dc466154b58bc00dc573816233e1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gepetto",
+        "repo": "toolbox-parallel-robots",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
