@@ -21,11 +21,11 @@ This repo illustrates methods proposed in [ICRA 2025 submission](https://gepetto
 ### Using docker
 - Pull the docker image
 ```
-docker pull gitlab.laas.fr:4567/ldematteis/nix-closedloopmotion
+docker pull ghcr.io/ludovicdematteis/closedloopmotion:latest
 ```
 - Run the docker image 
 ```
-docker run --rm --network host -it gitlab.laas.fr:4567/ldematteis/nix-closedloopmotion:latest
+docker run --rm --network host -it ghcr.io/ludovicdematteis/closedloopmotion:latest
 ```
 - Inside the docker
 ```
