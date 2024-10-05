@@ -21,17 +21,34 @@ This repo illustrates methods proposed in [ICRA 2025 submission](https://gepetto
 ### Using docker
 - Pull the docker image
 ```
-docker pull gitlab.laas.fr:4567/ldematteis/nix-closedloopmotion
+docker pull ghcr.io/ludovicdematteis/closedloopmotion:latest
 ```
 - Run the docker image 
 ```
-docker run --rm --network host -it gitlab.laas.fr:4567/ldematteis/nix-closedloopmotion:latest
+docker run --rm --network host -it ghcr.io/ludovicdematteis/closedloopmotion:latest
 ```
 - Inside the docker
 ```
 git clone https://github.com/LudovicDeMatteis/ClosedLoopMotion
 cd ClosedLoopMotion/
 ```
+### Nix
+Using nix you can either
+- Start the nix environnement from this repo
+```
+git clone https://github.com/LudovicDeMatteis/ClosedLoopMotion
+cd ClosedLoopMotion 
+nix develop
+```
+- or build the docker file
+```
+git clone https://github.com/LudovicDeMatteis/ClosedLoopMotion
+cd ClosedLoopMotion 
+nix build -L .#docker
+docker load < result
+docker run --rm --network host -it ghcr.io/ludovicdematteis/closedloopmotion:latest
+```
+
 ### From source
 To use this project, following dependencies are required:
 * [Crocoddyl fork](https://github.com/LudovicDeMatteis/crocoddyl/tree/topic/contact-6D-closed-loop) on branch `topic/contact-6D-closed-loop`
