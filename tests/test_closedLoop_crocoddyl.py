@@ -27,8 +27,8 @@ class TestContactLoop6D(unittest.TestCase):
             self.robot.model.frames[self.contactIds[1]].placement,
             pin.ReferenceFrame.LOCAL # Should be local or WORLD ?
         )
-        Kp = 0
-        Kd = 10
+        Kp = 50
+        Kd = 100
         self.contact_model.corrector.Kp[:] = Kp * np.ones(6)
         self.contact_model.corrector.Kd[:] = Kd * np.ones(6)
         self.contact_models = [self.contact_model]
@@ -64,7 +64,7 @@ class TestContactLoop6D(unittest.TestCase):
         return(a)
     
     def finite_differences(self, q, v, u, f):
-        eps = 1e-8
+        eps = 1e-7
         f0 = f(q, v, u).copy()
         Fq = np.zeros((f0.size, v.size))
         Fv = np.zeros((f0.size, v.size))
