@@ -62,6 +62,28 @@ def get_3d_position_error(model, data, q):
     position_error3d = oR1.T @ (o01 - o02)
     return position_error3d
 
+def get_dpos_dq(model, data, q):
+    # pos = get_3d_position_error(model, data, q)
+    oM1 = data.oMf[frame1]
+    oM2 = data.oMf[frame2]
+
+    oR1 = oM1.rotation
+    o01 = oM1.translation
+    o02 = oM2.translation
+    opos = o01 - o02
+
+    pin.computeJointJacobians(model, data, q)
+
+    f1Jf1 = pin.getFrameJacobian(model, data, frame1, pin.ReferenceFrame.LOCAL_WORLD_ALIGNED)
+    f2Jf2 = pin.getFrameJacobian(model, data, frame2, pin.ReferenceFrame.LOCAL_WORLD_ALIGNED)
+
+    dpos_dq = (
+        oR1.T @ skew(opos) @ f1Jf1[3:, :]
+        + oR1.T @ (f1Jf1[:3, :] - f2Jf2[:3, :])
+    ) 
+
+    return dpos_dq
+
 def get_3d_velocity_error(model, data, q, v):
     pin.forwardKinematics(model, data, q, v)
     pin.updateFramePlacements(model, data)
@@ -75,6 +97,70 @@ def get_3d_velocity_error(model, data, q, v):
         - skew(c1Mc2.translation) @ c1vc1.angular
     )
     return velocity_error3d
+
+def get_dvel_dq(model, data, q, v):
+    pos = get_3d_position_error(model, data, q)
+    dpos_dq = get_dpos_dq(model, data, q)
+    pin.forwardKinematics(model, data, q, v)
+    pin.updateFramePlacements(model, data)
+    c1vc1 = pin.getFrameVelocity(model, data, frame1, pin.ReferenceFrame.LOCAL)
+    c2vc2 = pin.getFrameVelocity(model, data, frame2, pin.ReferenceFrame.LOCAL)
+    c1Mc2 = data.oMf[frame1].actInv(data.oMf[frame2])
+    c1Rc2 = c1Mc2.rotation
+    oR1 = data.oMf[frame1].rotation
+    oR2 = data.oMf[frame2].rotation
+
+    pin.computeForwardKinematicsDerivatives(model, data, q, v, v*0)
+    pin.computeJointJacobians(model, data, q)
+    c1_dvc1_dq, _ = pin.getFrameVelocityDerivatives(model, data, frame1, pin.ReferenceFrame.LOCAL)
+    c2_dvc2_dq, _ = pin.getFrameVelocityDerivatives(model, data, frame2, pin.ReferenceFrame.LOCAL)
+    j1Jj1 = pin.getJointJacobian(model, data, joint1_id, pin.ReferenceFrame.LOCAL_WORLD_ALIGNED)
+    j2Jj2 = pin.getJointJacobian(model, data, joint2_id, pin.ReferenceFrame.LOCAL_WORLD_ALIGNED)
+
+    dvel_dq = (
+        c1_dvc1_dq[:3]
+        #
+        - c1Rc2 @ c2_dvc2_dq[:3]
+        - oR1.T @ skew(oR2 @ c2vc2.linear) @ (j1Jj1[3:, :] - j2Jj2[3:, :])
+        #
+        + skew(pos) @ c1_dvc1_dq[3:]
+        - skew(c1vc1.angular) @ dpos_dq
+    )
+    return dvel_dq
+
+def get_dacc_dq(model, data, q, v, a):
+    pos = get_3d_position_error(model, data, q)
+    vel = get_3d_velocity_error(model, data, q, v)
+    dpos_dq = get_dpos_dq(model, data, q)
+    dvel_dq = get_dvel_dq(model, data, q, v)
+    pin.forwardKinematics(model, data, q, v, a)
+    pin.updateFramePlacements(model, data)
+    c1vc1 = pin.getFrameVelocity(model, data, frame1, pin.ReferenceFrame.LOCAL)
+    c2vc2 = pin.getFrameVelocity(model, data, frame2, pin.ReferenceFrame.LOCAL)
+    c1ac1 = pin.getFrameAcceleration(model, data, frame1, pin.ReferenceFrame.LOCAL)
+    c2ac2 = pin.getFrameAcceleration(model, data, frame2, pin.ReferenceFrame.LOCAL)
+    c1Mc2 = data.oMf[frame1].actInv(data.oMf[frame2])
+    c1Rc2 = c1Mc2.rotation
+    oR1 = data.oMf[frame1].rotation
+    oR2 = data.oMf[frame2].rotation
+    c1vc2 = c1Mc2.act(c2vc2)
+
+    pin.computeForwardKinematicsDerivatives(model, data, q, v, a)
+    pin.computeJointJacobians(model, data, q)
+    c1_dvc1_dq, c1_dac1_dq, c1_dac1_dv, c1_dac1_da = pin.getFrameAccelerationDerivatives(model, data, frame1, pin.ReferenceFrame.LOCAL)
+    c2_dvc2_dq, c2_dac2_dq, c2_dac2_dv, c2_dac2_da = pin.getFrameAccelerationDerivatives(model, data, frame2, pin.ReferenceFrame.LOCAL)
+    j1Jj1 = pin.getJointJacobian(model, data, joint1_id, pin.ReferenceFrame.LOCAL_WORLD_ALIGNED)
+    j2Jj2 = pin.getJointJacobian(model, data, joint2_id, pin.ReferenceFrame.LOCAL_WORLD_ALIGNED)
+
+    dacc_dq = (
+        c1_dac1_dq[:3]
+        - (c1Rc2 @ c2_dac2_dq[:3, :] + oR1.T @ skew(oR2 @ c2ac2.linear) @ (j1Jj1[3:, :] - j2Jj2[3:, :]))
+        - skew(c1Rc2 @ c2vc2.linear) @ (c1_dvc1_dq[3:] - c1Rc2 @ c2_dvc2_dq[3:] - oR1.T @ skew(oR2 @ c2vc2.angular) @ (j1Jj1[3:, :] - j2Jj2[3:, :]))
+        + (skew(c1vc1.angular) - skew(c1vc2.angular)) @ (c1Rc2 @ c2_dvc2_dq[:3] + oR1.T @ skew(oR2 @ c2vc2.linear) @ (j1Jj1[3:, :] - j2Jj2[3:, :]))
+        + skew(vel) @ c1_dvc1_dq[3:] - skew(c1vc1.angular) @ dvel_dq
+        + skew(pos) @ c1_dac1_dq[3:] - skew(c1ac1.angular) @ dpos_dq
+    )
+    return dacc_dq
 
 def get_3d_acceleration_error(model, data, q, v, a):
     pin.forwardKinematics(model, data, q, v, a)
@@ -130,6 +216,7 @@ contact_data = contact.createData(data)
 
 x = np.concatenate([q, v])
 contact.calc(contact_data, x)
+contact.calcDiff(contact_data, x)
 #
 pos_error_3d = get_3d_position_error(model, data, q)
 vel_error_3d = get_3d_velocity_error(model, data, q, v)

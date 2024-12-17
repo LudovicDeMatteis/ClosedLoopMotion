@@ -2,10 +2,14 @@ import pinocchio as pin
 import numpy as np
 import sobec
 import os
+
 CWD = os.path.dirname(os.path.abspath(__file__))
 
+
 def battobot_open(base_height=0.575):
-    Q0_SHARED = np.load(f"{CWD}/initial_configs/q0_{str(base_height).replace('.', '_')}.npy")
+    Q0_SHARED = np.load(
+        f"{CWD}/initial_configs/q0_{str(base_height).replace('.', '_')}.npy"
+    )
     try:
         from example_parallel_robots.loader_tools import load
         from toolbox_parallel_robots.freeze_joints import freezeJoints
@@ -71,7 +75,7 @@ def battobot_open(base_height=0.575):
         jointToLockIds,
         pin.neutral(model),
     )
-    robot_constraint_models = [] # Reset the robot constraint models (empty for open loop)
+    robot_constraint_models = []  # Reset the robot constraint models (empty for open loop)
 
     model.referenceConfigurations["half_sitting"] = Q0_SHARED
     model.frames[15].name = "foot_frame_right"
@@ -90,8 +94,11 @@ def battobot_open(base_height=0.575):
     robot.model.armature = armature
     return robot
 
+
 def battobot_closed(export_joints_ids=False, base_height=0.575):
-    Q0_SHARED = np.load(f"{CWD}/initial_configs/q0_{str(base_height).replace('.', '_')}.npy")
+    Q0_SHARED = np.load(
+        f"{CWD}/initial_configs/q0_{str(base_height).replace('.', '_')}.npy"
+    )
     try:
         from example_parallel_robots.loader_tools import load
         from toolbox_parallel_robots.projections import configurationProjection
@@ -204,19 +211,20 @@ def battobot_closed(export_joints_ids=False, base_height=0.575):
     else:
         return robot
 
+
 if __name__ == "__main__":
     from utils.vizutils import traj_cam_linear, visualizeConstraints
     import meshcat
     from pinocchio.visualize import MeshcatVisualizer
     import time
 
-    robot, (SERIAL_JOINT_IDS_Q,
-            SERIAL_JOINT_IDS_V,
-            LOOP_JOINT_IDS_Q,
-            LOOP_JOINT_IDS_V) = battobot_closed(export_joints_ids=True, base_height=0.575)
+    (
+        robot,
+        (SERIAL_JOINT_IDS_Q, SERIAL_JOINT_IDS_V, LOOP_JOINT_IDS_Q, LOOP_JOINT_IDS_V),
+    ) = battobot_closed(export_joints_ids=True, base_height=0.575)
     model = robot.model
     data = model.createData()
-    qclosed = robot.x0[:model.nq]
+    qclosed = robot.x0[: model.nq]
     qopen = pin.neutral(model)
     qopen[SERIAL_JOINT_IDS_Q] = qclosed[SERIAL_JOINT_IDS_Q]
     zoom_pos = [0.2, -0.3, 0.4]
@@ -236,20 +244,20 @@ if __name__ == "__main__":
 
     for t in traj1:
         viz.setCameraPosition(t)
-        time.sleep(1/fps)
+        time.sleep(1 / fps)
         images.append(viz.viewer.get_image())
 
     visualizeConstraints(viz, model, data, robot.loop_constraints_models, qopen)
-    for t in range(2*fps):
+    for t in range(2 * fps):
         images.append(viz.viewer.get_image())
-        time.sleep(1/fps)
+        time.sleep(1 / fps)
     visualizeConstraints(viz, model, data, robot.loop_constraints_models, qclosed)
     viz.display(qclosed)
-    for t in range(3*fps):
+    for t in range(3 * fps):
         images.append(viz.viewer.get_image())
-        time.sleep(1/fps)
+        time.sleep(1 / fps)
 
     for t in traj2:
         viz.setCameraPosition(t)
         images.append(viz.viewer.get_image())
-        time.sleep(1/fps)
+        time.sleep(1 / fps)
