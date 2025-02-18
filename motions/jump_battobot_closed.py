@@ -9,8 +9,9 @@ import sobec
 import loaders
 import params
 
-def jump_battobot_closed(jump_duration, guessFile=None, saveFile=None):
-    walkParams = params.JumpBattobotParams('closed')
+
+def jump_battobot_closed(jump_duration, guessFile=None, saveFile=None, benchmark=False):
+    walkParams = params.JumpBattobotParams("closed")
     walkParams.TFlyUp = int((jump_duration / 2) / walkParams.DT)
     walkParams.TFlyDown = walkParams.TFlyUp
     walkParams.TFly = walkParams.TFlyUp + walkParams.TFlyDown
@@ -20,9 +21,6 @@ def jump_battobot_closed(jump_duration, guessFile=None, saveFile=None):
         + [[0, 0]] * int(walkParams.TFlyUp + walkParams.TFlyDown)
         + [[1, 1]] * int(walkParams.TLand + walkParams.Tend)
     )
-    Ttotal = len(contactPattern)
-    TMid = walkParams.Tstart + walkParams.TFlyUp
-    
     base_height = 0.575
 
     # #####################################################################################
@@ -35,14 +33,7 @@ def jump_battobot_closed(jump_duration, guessFile=None, saveFile=None):
     # #####################################################################################
     # ### CONTACT PATTERN #################################################################
     # #####################################################################################
-    try:
-        # If possible, the initial state and contact pattern are taken from a file.
-        ocpConfig = sobec.wwt.loadProblemConfig()
-        contactPattern = ocpConfig["contactPattern"]
-        robot.x0 = ocpConfig["x0"]
-        stateTerminalTarget = ocpConfig["stateTerminalTarget"]
-    except (KeyError, FileNotFoundError):
-        contactPattern = walkParams.contactPattern
+    contactPattern = walkParams.contactPattern
 
     q0 = robot.x0[: robot.model.nq]
     print(
@@ -55,24 +46,26 @@ def jump_battobot_closed(jump_duration, guessFile=None, saveFile=None):
     # #####################################################################################
     # ### DDP #############################################################################
     # #####################################################################################
-    ddp = sobec.wwt.buildJumpSolver(robot, contactPattern, walkParams, solver='FDDP')
-    problem = ddp.problem
+    ddp = sobec.wwt.buildJumpSolver(robot, contactPattern, walkParams, solver="FDDP")
     x0s, u0s = sobec.wwt.buildInitialGuess(ddp.problem, walkParams)
     ddp.setCallbacks([croc.CallbackVerbose(), croc.CallbackLogger()])
 
-
-
+    croc.stop_watch_reset_all()
     croc.enable_profiler()
     ddp.solve(x0s, u0s, 200)
+    croc.disable_profiler()
 
     sol = sobec.wwt.Solution(robot, ddp)
 
+    if benchmark:
+        return robot, ddp, sol, walkParams, croc.stop_watch_report(3)
     return robot, ddp, sol, walkParams
+
 
 if __name__ == "__main__":
     from motions.utils import plot_solution, create_viewer
-    robot, ddp, sol, params = jump_battobot_closed(0.4)
 
+    robot, ddp, sol, params, report_bench = jump_battobot_closed(0.4, benchmark=True)
     plot_solution(robot, ddp, sol, params)
 
     # Visualize the solution
@@ -81,5 +74,11 @@ if __name__ == "__main__":
         viz.play(np.array(ddp.xs)[:, : robot.model.nq], params.DT)
 
     if params.saveFile is not None and input("Save trajectory? (y/n)") == "y":
-        sobec.wwt.save_traj(xs=np.array(sol.xs), us=np.array(sol.us), fs=sol.fs0, acs=sol.acs, n_iter=ddp.iter, filename=params.saveFile)
-
+        sobec.wwt.save_traj(
+            xs=np.array(sol.xs),
+            us=np.array(sol.us),
+            fs=sol.fs0,
+            acs=sol.acs,
+            n_iter=ddp.iter,
+            filename=params.saveFile,
+        )

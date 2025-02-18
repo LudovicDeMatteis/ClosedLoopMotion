@@ -32,7 +32,7 @@ def battobot_open(base_height=0.575):
         model.inertias[i].inertia += np.eye(3) * 1e-3
     # Lock the joints
     joints_lock_names = [
-        # Right
+        # Left
         "left_spherical_foot_1",
         "left_spherical_foot_2",
         "free_knee_left_Y",
