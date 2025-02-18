@@ -1,3 +1,4 @@
-loaders/__pycache__/*
-params/__pycache__/*
-motions/__pycache__/*
+*/__pycache__/
+__pycache__/
+.direnv/
+.envrc
