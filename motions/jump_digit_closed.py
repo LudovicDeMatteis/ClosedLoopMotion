@@ -9,8 +9,9 @@ import sobec
 import loaders
 import params
 
-def jump_digit_closed(jump_duration, guessFile=None, saveFile=None):
-    walkParams = params.JumpDigitParams('closed')
+
+def jump_digit_closed(jump_duration, guessFile=None, saveFile=None, benchmark=False):
+    walkParams = params.JumpDigitParams("closed")
     walkParams.TFlyUp = int((jump_duration / 2) / walkParams.DT)
     walkParams.TFlyDown = walkParams.TFlyUp
     walkParams.TFly = walkParams.TFlyUp + walkParams.TFlyDown
@@ -22,7 +23,7 @@ def jump_digit_closed(jump_duration, guessFile=None, saveFile=None):
     )
     Ttotal = len(contactPattern)
     TMid = walkParams.Tstart + walkParams.TFlyUp
-    
+
     base_height = 0.6
 
     # #####################################################################################
@@ -55,31 +56,51 @@ def jump_digit_closed(jump_duration, guessFile=None, saveFile=None):
     # #####################################################################################
     # ### DDP #############################################################################
     # #####################################################################################
-    ddp = sobec.wwt.buildJumpSolver(robot, contactPattern, walkParams, solver='FDDP')
+    ddp = sobec.wwt.buildJumpSolver(robot, contactPattern, walkParams, solver="FDDP")
     problem = ddp.problem
     x0s, u0s = sobec.wwt.buildInitialGuess(ddp.problem, walkParams)
     ddp.setCallbacks([croc.CallbackVerbose(), croc.CallbackLogger()])
 
+    if benchmark:
+        from motions.utils import ReportBench
 
+        croc.stop_watch_reset_all()
+        croc.enable_profiler()
+        ddp.solve(x0s, u0s, 200)
+        croc.disable_profiler()
+        report_bench = ReportBench()
+        sol = sobec.wwt.Solution(robot, ddp)
 
-    croc.enable_profiler()
-    ddp.solve(x0s, u0s, 200)
+        return robot, ddp, sol, walkParams, report_bench
 
-    sol = sobec.wwt.Solution(robot, ddp)
+    else:
+        ddp.solve(x0s, u0s, 200)
+        sol = sobec.wwt.Solution(robot, ddp)
+        return robot, ddp, sol, walkParams
 
-    return robot, ddp, sol, walkParams
 
 if __name__ == "__main__":
-    from motions.utils import plot_solution, create_viewer
-    robot, ddp, sol, params = jump_digit_closed(0.4)
+    from motions.utils import plot_solution, create_viewer, plot_bench
 
-    plot_solution(robot, ddp, sol, params)
+    benchmark = True
+    if benchmark:
+        robot, ddp, sol, params, report = jump_digit_closed(0.4, benchmark=True)
+        plot_bench(report)
+    else:
+        robot, ddp, sol, params = jump_digit_closed(0.4)
+        plot_solution(robot, ddp, sol, params)
 
-    # Visualize the solution
-    viz = create_viewer(robot)
-    while input("Press q to quit the visualisation") != "q":
-        viz.play(np.array(ddp.xs)[:, : robot.model.nq], params.DT)
+        # Visualize the solution
+        viz = create_viewer(robot)
+        while input("Press q to quit the visualisation") != "q":
+            viz.play(np.array(ddp.xs)[:, : robot.model.nq], params.DT)
 
-    if params.saveFile is not None and input("Save trajectory? (y/n)") == "y":
-        sobec.wwt.save_traj(xs=np.array(sol.xs), us=np.array(sol.us), fs=sol.fs0, acs=sol.acs, n_iter=ddp.iter, filename=params.saveFile)
-
+        if params.saveFile is not None and input("Save trajectory? (y/n)") == "y":
+            sobec.wwt.save_traj(
+                xs=np.array(sol.xs),
+                us=np.array(sol.us),
+                fs=sol.fs0,
+                acs=sol.acs,
+                n_iter=ddp.iter,
+                filename=params.saveFile,
+            )

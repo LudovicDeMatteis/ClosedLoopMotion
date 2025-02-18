@@ -74,23 +74,25 @@ def jump_battobot_open(jump_duration, guessFile=None, saveFile=None, benchmark=F
 if __name__ == "__main__":
     from motions.utils import plot_solution, create_viewer, plot_bench
 
-    robot, ddp, sol, params, report = jump_battobot_open(0.4, benchmark=True)
+    benchmark = True
+    if benchmark:
+        robot, ddp, sol, params, report = jump_battobot_open(0.4, benchmark=True)
+        plot_bench(report)
+    else:
+        robot, ddp, sol, params = jump_battobot_open(0.4)
+        plot_solution(robot, ddp, sol, params)
 
-    # plot_solution(robot, ddp, sol, params)
+        # Visualize the solution
+        viz = create_viewer(robot)
+        while input("Press q to quit the visualisation") != "q":
+            viz.play(np.array(ddp.xs)[:, : robot.model.nq], params.DT)
 
-    # Visualize the solution
-    # viz = create_viewer(robot)
-    # while input("Press q to quit the visualisation") != "q":
-    #     viz.play(np.array(ddp.xs)[:, : robot.model.nq], params.DT)
-
-    # if params.saveFile is not None and input("Save trajectory? (y/n)") == "y":
-    #     sobec.wwt.save_traj(
-    #         xs=np.array(sol.xs),
-    #         us=np.array(sol.us),
-    #         fs=sol.fs0,
-    #         acs=sol.acs,
-    #         n_iter=ddp.iter,
-    #         filename=params.saveFile,
-    #     )
-
-    plot_bench(report)
+        if params.saveFile is not None and input("Save trajectory? (y/n)") == "y":
+            sobec.wwt.save_traj(
+                xs=np.array(sol.xs),
+                us=np.array(sol.us),
+                fs=sol.fs0,
+                acs=sol.acs,
+                n_iter=ddp.iter,
+                filename=params.saveFile,
+            )
