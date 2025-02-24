@@ -72,11 +72,12 @@ def jump_battobot_open(jump_duration, guessFile=None, saveFile=None, benchmark=F
 
 
 if __name__ == "__main__":
-    from motions.utils import plot_solution, create_viewer, plot_bench
+    from motions.utils import plot_solution, create_viewer, plot_bench, print_bench
 
     benchmark = True
     if benchmark:
         robot, ddp, sol, params, report = jump_battobot_open(0.4, benchmark=True)
+        print_bench(report)
         plot_bench(report)
     else:
         robot, ddp, sol, params = jump_battobot_open(0.4)

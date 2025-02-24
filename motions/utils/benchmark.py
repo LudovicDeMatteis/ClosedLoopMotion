@@ -1,27 +1,26 @@
 import numpy as np
 import crocoddyl
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 
 class ReportBench:
     metrics_names = [
-        "ShootingProblem::calc",
-        "ShootingProblem::calcDiff",
-        "SolverDDP::Qu",
-        "SolverDDP::Quu",
-        "SolverDDP::Quu_inv",
-        "SolverDDP::Quu_inv_Qux",
-        "SolverDDP::Qx",
-        "SolverDDP::Qxu",
-        "SolverDDP::Qxx",
-        "SolverDDP::Vx",
-        "SolverDDP::Vxx",
+        # "ShootingProblem::calc",
+        # "ShootingProblem::calcDiff",
+        # "SolverDDP::Qu",
+        # "SolverDDP::Quu",
+        # "SolverDDP::Quu_inv",
+        # "SolverDDP::Quu_inv_Qux",
+        # "SolverDDP::Qx",
+        # "SolverDDP::Qxu",
+        # "SolverDDP::Qxx",
+        # "SolverDDP::Vx",
+        # "SolverDDP::Vxx",
         "SolverDDP::backwardPass",
         "SolverDDP::calcDiff",
-        "SolverDDP::computeDirection",
-        "SolverDDP::computeGains",
-        "SolverDDP::tryStep",
+        # "SolverDDP::computeDirection",
+        # "SolverDDP::computeGains",
+        # "SolverDDP::tryStep",
         "SolverFDDP::forwardPass",
         "SolverFDDP::solve",
     ]
@@ -92,3 +91,44 @@ def plot_bench(report):
 
     plt.tight_layout()
     plt.show()
+
+
+def print_bench(report):
+    # Print a table with the metrics :
+    # | Name | Average | Min | Max | Calls | Total | %Total |
+    # |------|---------|-----|-----|-------|-------|--------|
+    # |      |         |     |     |       |       |       |
+    print(
+        "|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|".format(
+            "Name", "Average", "Min", "Max", "Calls", "Total", "%Total"
+        )
+    )
+    print(
+        "|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|".format(
+            "-" * 20, "-" * 20, "-" * 20, "-" * 20, "-" * 20, "-" * 20, "-" * 20
+        )
+    )
+    prec = 3
+    for name in report.metrics_names[:-1]:
+        name_display = name.split("::")[-1]
+        print(
+            "|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|".format(
+                name_display,
+                round(report.metrics[name][0], prec),
+                round(report.metrics[name][1], prec),
+                round(report.metrics[name][2], prec),
+                round(report.metrics[name][4], prec),
+                round(report.metrics[name][3], prec),
+                round(
+                    100
+                    * report.metrics[name][3]
+                    / report.metrics["SolverFDDP::solve"][3],
+                    prec,
+                ),
+            )
+        )
+        print(
+            "|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|{:^20}|".format(
+                "-" * 20, "-" * 20, "-" * 20, "-" * 20, "-" * 20, "-" * 20, "-" * 20
+            )
+        )

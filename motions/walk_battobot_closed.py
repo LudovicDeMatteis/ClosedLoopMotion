@@ -9,18 +9,29 @@ import sobec
 import loaders
 import params
 
-def walk_battobot_closed(com_vel, n_steps, ss_duration, ds_duration, com_weight, external_run=True, guessFile=None, saveFile=None):
-    walkParams = params.WalkBattobotParams('closed')
+
+def walk_battobot_closed(
+    com_vel,
+    n_steps,
+    ss_duration,
+    ds_duration,
+    com_weight,
+    external_run=True,
+    guessFile=None,
+    saveFile=None,
+):
+    walkParams = params.WalkBattobotParams("closed")
     print(walkParams.vcomRef)
     walkParams.vcomRef[0] = com_vel
     walkParams.Tsingle = int(ss_duration / walkParams.DT)
     walkParams.Tdouble = params.roundToOdd(int(ds_duration / walkParams.DT))
     print(walkParams.vcomRef)
-    walkParams.cycle = ( [[1, 0]] * walkParams.Tsingle
-                        + [[1, 1]] * walkParams.Tdouble
-                        + [[0, 1]] * walkParams.Tsingle
-                        + [[1, 1]] * walkParams.Tdouble
-                        )
+    walkParams.cycle = (
+        [[1, 0]] * walkParams.Tsingle
+        + [[1, 1]] * walkParams.Tdouble
+        + [[0, 1]] * walkParams.Tsingle
+        + [[1, 1]] * walkParams.Tdouble
+    )
     walkParams.contactPattern = contactPattern = (
         []
         + [[1, 1]] * walkParams.Tstart
@@ -68,12 +79,10 @@ def walk_battobot_closed(com_vel, n_steps, ss_duration, ds_duration, com_weight,
     # #####################################################################################
     # ### DDP #############################################################################
     # #####################################################################################
-    ddp = sobec.wwt.buildSolver(robot, contactPattern, walkParams, solver='FDDP')
+    ddp = sobec.wwt.buildSolver(robot, contactPattern, walkParams, solver="FDDP")
     problem = ddp.problem
     x0s, u0s = sobec.wwt.buildInitialGuess(ddp.problem, walkParams)
     ddp.setCallbacks([croc.CallbackVerbose(), croc.CallbackLogger()])
-
-
 
     croc.enable_profiler()
     ddp.solve(x0s, u0s, walkParams.solver_maxiter)
@@ -86,16 +95,28 @@ def walk_battobot_closed(com_vel, n_steps, ss_duration, ds_duration, com_weight,
 
     return robot, ddp, sol, walkParams
 
+
 if __name__ == "__main__":
     from motions.utils import plot_solution, create_viewer
-    robot, ddp, sol, params = walk_battobot_closed(0.7, 4, 0.4, 0.02, 0)
 
-    plot_solution(robot, ddp, sol, params)
+    robot, ddp, sol, params = walk_battobot_closed(
+        0.5, 4, 0.4, 0.02, 1250, saveFile="/tmp/com_1250/battobot_closed.npy"
+    )
+
+    # plot_solution(robot, ddp, sol, params)
 
     # Visualize the solution
     viz = create_viewer(robot)
     while input("Press q to quit the visualisation") != "q":
         viz.play(np.array(ddp.xs)[:, : robot.model.nq], params.DT)
 
+    print(params.saveFile)
     if params.saveFile is not None and input("Save trajectory? (y/n)") == "y":
-        sobec.wwt.save_traj(xs=np.array(sol.xs), us=np.array(sol.us), fs=sol.fs0, acs=sol.acs, n_iter=ddp.iter, filename=params.saveFile)
+        sobec.wwt.save_traj(
+            xs=np.array(sol.xs),
+            us=np.array(sol.us),
+            fs=sol.fs0,
+            acs=sol.acs,
+            n_iter=ddp.iter,
+            filename=params.saveFile,
+        )

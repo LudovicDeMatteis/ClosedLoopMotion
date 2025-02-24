@@ -10,24 +10,12 @@ import loaders
 import params
 
 
-def jump_battobot_closed(jump_duration, guessFile=None, saveFile=None, benchmark=False):
-    walkParams = params.JumpBattobotParams("closed")
-    walkParams.TFlyUp = int((jump_duration / 2) / walkParams.DT)
-    walkParams.TFlyDown = walkParams.TFlyUp
-    walkParams.TFly = walkParams.TFlyUp + walkParams.TFlyDown
-    walkParams.contactPattern = contactPattern = (
-        []
-        + [[1, 1]] * int(walkParams.TStand + walkParams.TPush)
-        + [[0, 0]] * int(walkParams.TFlyUp + walkParams.TFlyDown)
-        + [[1, 1]] * int(walkParams.TLand + walkParams.Tend)
-    )
-    base_height = 0.575
-
+def jump_kangaroo_closed(jump_duration, guessFile=None, saveFile=None, benchmark=False):
     # #####################################################################################
     # ### LOAD ROBOT ######################################################################
     # #####################################################################################
-
-    robot = loaders.battobot_closed(base_height=base_height)
+    robot = loaders.kangaroo_closed()
+    walkParams = params.JumpKangarooParams(robot.model)
     assert len(walkParams.stateImportance) == robot.model.nv * 2
 
     # #####################################################################################
@@ -50,12 +38,13 @@ def jump_battobot_closed(jump_duration, guessFile=None, saveFile=None, benchmark
     x0s, u0s = sobec.wwt.buildInitialGuess(ddp.problem, walkParams)
     ddp.setCallbacks([croc.CallbackVerbose(), croc.CallbackLogger()])
 
+    max_iter = 1000
     if benchmark:
         from motions.utils import ReportBench
 
         croc.stop_watch_reset_all()
         croc.enable_profiler()
-        ddp.solve(x0s, u0s, 200)
+        ddp.solve(x0s, u0s, max_iter)
         croc.disable_profiler()
         report_bench = ReportBench()
         sol = sobec.wwt.Solution(robot, ddp)
@@ -63,7 +52,7 @@ def jump_battobot_closed(jump_duration, guessFile=None, saveFile=None, benchmark
         return robot, ddp, sol, walkParams, report_bench
 
     else:
-        ddp.solve(x0s, u0s, 200)
+        ddp.solve(x0s, u0s, max_iter)
         sol = sobec.wwt.Solution(robot, ddp)
         return robot, ddp, sol, walkParams
 
@@ -71,13 +60,13 @@ def jump_battobot_closed(jump_duration, guessFile=None, saveFile=None, benchmark
 if __name__ == "__main__":
     from motions.utils import plot_solution, create_viewer, plot_bench, print_bench
 
-    benchmark = True
+    benchmark = False
     if benchmark:
-        robot, ddp, sol, params, report = jump_battobot_closed(0.4, benchmark=True)
+        robot, ddp, sol, params, report = jump_kangaroo_closed(0.4, benchmark=True)
         print_bench(report)
         plot_bench(report)
     else:
-        robot, ddp, sol, params = jump_battobot_closed(0.4)
+        robot, ddp, sol, params = jump_kangaroo_closed(0.4)
         plot_solution(robot, ddp, sol, params)
 
         # Visualize the solution

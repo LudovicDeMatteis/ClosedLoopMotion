@@ -10,7 +10,7 @@ import loaders
 import params
 
 
-def walk_battobot_open(
+def walk_kangaroo_closed(
     com_vel,
     n_steps,
     ss_duration,
@@ -20,7 +20,8 @@ def walk_battobot_open(
     guessFile=None,
     saveFile=None,
 ):
-    walkParams = params.WalkBattobotParams("open")
+    robot = loaders.kangaroo_closed()
+    walkParams = params.WalkKangarooParams(robot.model)
     walkParams.vcomRef[0] = com_vel
     walkParams.Tsingle = int(ss_duration / walkParams.DT)
     walkParams.Tdouble = params.roundToOdd(int(ds_duration / walkParams.DT))
@@ -41,13 +42,9 @@ def walk_battobot_open(
     walkParams.guessFile = guessFile
     walkParams.saveFile = saveFile
 
-    base_height = 0.575
-
     # #####################################################################################
     # ### LOAD ROBOT ######################################################################
     # #####################################################################################
-
-    robot = loaders.battobot_open(base_height=base_height)
     assert len(walkParams.stateImportance) == robot.model.nv * 2
 
     # #####################################################################################
@@ -61,6 +58,10 @@ def walk_battobot_open(
         stateTerminalTarget = ocpConfig["stateTerminalTarget"]
     except (KeyError, FileNotFoundError):
         contactPattern = walkParams.contactPattern
+
+    # #####################################################################################
+    # ### VIZ #############################################################################
+    # ####################################################################################
 
     q0 = robot.x0[: robot.model.nq]
     print(
@@ -81,6 +82,9 @@ def walk_battobot_open(
     croc.enable_profiler()
     ddp.solve(x0s, u0s, walkParams.solver_maxiter)
 
+    # ### PLOT ######################################################################
+    # ### PLOT ######################################################################
+    # ### PLOT ######################################################################
     sol = sobec.wwt.Solution(robot, ddp)
 
     return robot, ddp, sol, walkParams
@@ -89,18 +93,15 @@ def walk_battobot_open(
 if __name__ == "__main__":
     from motions.utils import plot_solution, create_viewer
 
-    robot, ddp, sol, params = walk_battobot_open(
-        0.5, 4, 0.4, 0.01, 1250, saveFile="/tmp/com_1250/battobot_open.npy"
-    )
+    robot, ddp, sol, params = walk_kangaroo_closed(0.4, 4, 0.3, 0.05, 0)
 
-    # plot_solution(robot, ddp, sol, params)
+    plot_solution(robot, ddp, sol, params)
 
     # Visualize the solution
     viz = create_viewer(robot)
     while input("Press q to quit the visualisation") != "q":
         viz.play(np.array(ddp.xs)[:, : robot.model.nq], params.DT)
 
-    print(params.saveFile)
     if params.saveFile is not None and input("Save trajectory? (y/n)") == "y":
         sobec.wwt.save_traj(
             xs=np.array(sol.xs),
