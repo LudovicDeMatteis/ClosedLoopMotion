@@ -97,6 +97,4 @@ fig.legend(
     bbox_to_anchor=(0.5, 0.98),
     ncol=3,
 )
-# plt.yscale("log")
-# plt.tight_layout()
 plt.show()

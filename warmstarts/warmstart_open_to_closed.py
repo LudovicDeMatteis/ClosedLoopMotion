@@ -9,7 +9,7 @@ import time as time
 import loaders
 import sobec
 from sobec.walk_without_think.actuation_matrix import ActuationModelMatrix
-import params as paramsMotions
+import params as motionsParams
 from motions.utils import create_viewer
 
 from tqdm import tqdm
@@ -24,8 +24,26 @@ def getClosedWarmstart(
     fs_open = np.array(ws["fs"])
     acs_open = np.array(ws["acs"])
 
-    params = paramsMotions.SquatBattobotParams("open")
+    params = motionsParams.WalkBattobotParams("open")
     contactPattern = params.contactPattern
+
+    params.vcomRef[0] = velocity
+    params.Tsingle = int(0.4 / params.DT)
+    params.Tdouble = motionsParams.roundToOdd(int(0.01 / params.DT))
+    params.cycle = (
+        [[1, 0]] * params.Tsingle
+        + [[1, 1]] * params.Tdouble
+        + [[0, 1]] * params.Tsingle
+        + [[1, 1]] * params.Tdouble
+    )
+    params.contactPattern = contactPattern = (
+        []
+        + [[1, 1]] * params.Tstart
+        + (params.cycle * int(4))
+        + [[1, 1]] * params.Tend
+        + [[1, 1]]
+    )
+    params.comWeight = comWeight
 
     robot_open = loaders.battobot_open(base_height=base_height)
     robot_closed, (SER_Q, SER_V, LOOP_Q, LOOP_V) = loaders.battobot_closed(
@@ -174,20 +192,23 @@ def getClosedWarmstart(
 if __name__ == "__main__":
     import sys
 
-    for squat_height in [
-        1.0,
-        0.95,
-        0.9,
-        0.85,
-        0.8,
-        0.75,
-        0.7,
-        0.65,
+    vcom_list = [
+        0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
         0.6,
-        1.05,
+        0.7,
+        0.8,
+        0.9,
+        1.0,
         1.1,
-        1.15,
-    ]:
+        1.2,
+    ]
+
+    for v in vcom_list:
         if len(sys.argv) > 1:
             ws_file = sys.argv[1]
             save_file = sys.argv[2]
@@ -198,18 +219,12 @@ if __name__ == "__main__":
             s = round(float(sys.argv[5]) * 1e-4, 5)
             autosave = sys.argv[6]
         else:
-            ws_file = f"/tmp/squat/squat_{int(squat_height * 100)}_battobot_open.npy"
-            save_file = (
-                f"/tmp/squat/squat_{int(squat_height * 100)}_battobot_open_closed.npy"
-            )
-            if squat_height == 1.15:
-                ws_file = f"/tmp/squat/squat_115_battobot_open.npy"
-                save_file = f"/tmp/squat/squat_115_battobot_open_closed.npy"
+            ws_file = f"/tmp/walk_vel/walk_{int(10 * v)}_battobot_open.npy"
+            save_file = f"/tmp/walk_vel/walk_{int(10 * v)}_battobot_open_closed.npy"
             b = 0.575
-            w = 0
             s = 0.0
-            v = 0.5
-            autosave = False
+            w = 0
+            autosave = True
 
         xs_closed, us_closed = getClosedWarmstart(
             ws_file, autosave, base_height=b, slope=s, velocity=v, comWeight=w

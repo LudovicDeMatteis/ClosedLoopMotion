@@ -7,7 +7,7 @@ from numpy.linalg import norm, pinv, inv, svd, eig  # noqa: F401
 # Local imports
 import sobec
 import loaders
-import params
+import params as motionsParams
 
 
 def walk_battobot_open(
@@ -20,10 +20,10 @@ def walk_battobot_open(
     guessFile=None,
     saveFile=None,
 ):
-    walkParams = params.WalkBattobotParams("open")
+    walkParams = motionsParams.WalkBattobotParams("open")
     walkParams.vcomRef[0] = com_vel
     walkParams.Tsingle = int(ss_duration / walkParams.DT)
-    walkParams.Tdouble = params.roundToOdd(int(ds_duration / walkParams.DT))
+    walkParams.Tdouble = motionsParams.roundToOdd(int(ds_duration / walkParams.DT))
     walkParams.cycle = (
         [[1, 0]] * walkParams.Tsingle
         + [[1, 1]] * walkParams.Tdouble
@@ -89,24 +89,48 @@ def walk_battobot_open(
 if __name__ == "__main__":
     from motions.utils import plot_solution, create_viewer
 
-    robot, ddp, sol, params = walk_battobot_open(
-        0.5, 4, 0.4, 0.01, 1250, saveFile="/tmp/com_1250/battobot_open.npy"
-    )
+    vcom_list = [
+        0,
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+        0.6,
+        0.7,
+        0.8,
+        0.9,
+        1.0,
+        1.1,
+        1.2,
+    ]
+    for vel in vcom_list:
+        robot, ddp, sol, params = walk_battobot_open(
+            vel,
+            4,
+            0.4,
+            0.01,
+            0,
+            saveFile=f"/tmp/walk_vel/walk_{int(10 * vel)}_battobot_open.npy",
+        )
+        # plot_solution(robot, ddp, sol, params)
 
-    # plot_solution(robot, ddp, sol, params)
-
-    # Visualize the solution
-    viz = create_viewer(robot)
-    while input("Press q to quit the visualisation") != "q":
+        # Visualize the solution
+        viz = create_viewer(robot)
+        # while input("Press q to quit the visualisation") != "q":
         viz.play(np.array(ddp.xs)[:, : robot.model.nq], params.DT)
 
-    print(params.saveFile)
-    if params.saveFile is not None and input("Save trajectory? (y/n)") == "y":
-        sobec.wwt.save_traj(
-            xs=np.array(sol.xs),
-            us=np.array(sol.us),
-            fs=sol.fs0,
-            acs=sol.acs,
-            n_iter=ddp.iter,
-            filename=params.saveFile,
-        )
+        print(params.saveFile)
+        if (
+            params.saveFile is not None
+            # and input("Save trajectory? (y/n)") == "y"
+            # or True
+        ):
+            sobec.wwt.save_traj(
+                xs=np.array(sol.xs),
+                us=np.array(sol.us),
+                fs=sol.fs0,
+                acs=sol.acs,
+                n_iter=ddp.iter,
+                filename=params.saveFile,
+            )
