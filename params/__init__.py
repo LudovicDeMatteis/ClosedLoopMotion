@@ -12,3 +12,7 @@ from .digit_stairs import StairsDigitParams
 from .kangaroo_jump import JumpKangarooParams
 from .kangaroo_squat import SquatKangarooParams
 from .kangaroo_walk import WalkKangarooParams
+
+from .cleobot_squat import SquatCleobotParams
+from .cleobot_walk import WalkCleobotParams
+from .cleobot_jump import JumpCleobotParams

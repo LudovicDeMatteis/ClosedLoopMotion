@@ -1,17 +1,19 @@
 import numpy as np
 from params.params_base import ParamsBase, roundToOdd
 
+
 class JumpBattobotParams(ParamsBase):
-    '''
+    """
     Parameters for the walk of the Battobot robot.
-    '''
+    """
+
     mainJointsIds = [
-        'hipz_right',
-        'hipy_right',
-        'knee_right',
-        'hipz_left',
-        'hipy_left',
-        'knee_left',
+        "hipz_right",
+        "hipy_right",
+        "knee_right",
+        "hipz_left",
+        "hipy_left",
+        "knee_left",
     ]
     # Define time steps
     DT = 0.015
@@ -37,16 +39,8 @@ class JumpBattobotParams(ParamsBase):
 
     ## Define costs
     # * Task specific cost
-    # vcomWeight = 0
-    # vcomRef = np.r_[ 0, 0, 0 ]
-    # vcomImportance = np.array([0, 0, 1])
-
-    # comWeight = 0
-    # comRef = np.r_[ 0, 0, 0]
-    # comImportance = np.array([0, 0, 1])
-    
-    v0 = 9.81*TFlyUp*DT # Velocity to arrive at Tmid with the 0 velocity
-    href = v0*DT*TFlyUp/2 # Height to reach at Tmid
+    v0 = 9.81 * TFlyUp * DT  # Velocity to arrive at Tmid with the 0 velocity
+    href = v0 * DT * TFlyUp / 2  # Height to reach at Tmid
 
     comRefTrajWeight = 1e5
     comRefTraj = [np.array([1, 1, 1]) for _ in range(Ttotal)]
@@ -67,10 +61,10 @@ class JumpBattobotParams(ParamsBase):
     refMainJointsAtImpactWeight = 0
 
     # * Regularisation costs
-    refStateWeight = 0.7       # /
-    refTorqueWeight = 0.05     # /
+    refStateWeight = 0.7  # /
+    refTorqueWeight = 0.05  # /
     stateTerminalWeight = 1000
-    refForceWeight = 500       # /
+    refForceWeight = 500  # /
     copWeight = 5
 
     # Solver parameters
@@ -89,74 +83,111 @@ class JumpBattobotParams(ParamsBase):
 
     def __init__(self, model_type="open"):
         if model_type == "open":
-            basisQWeights = [0,0,0,50,50,0]
+            basisQWeights = [0, 0, 0, 50, 50, 0]
             legQWeights = [
-                1, 1, 1, # hip z, x, y
-                1, # knee (passive)
-                1, 1, # ankle x, y
+                1,
+                1,
+                1,  # hip z, x, y
+                1,  # knee (passive)
+                1,
+                1,  # ankle x, y
             ]
-            basisVWeights = [0,0,0,3,3,1]
+            basisVWeights = [0, 0, 0, 3, 3, 1]
             legVWeights = [
-                1, 1, 1, # hip z, x, y
-                1, # knee (passive)
-                1, 1, # ankle x, y
+                1,
+                1,
+                1,  # hip z, x, y
+                1,  # knee (passive)
+                1,
+                1,  # ankle x, y
             ]
             self.stateImportance = np.array(
                 basisQWeights + legQWeights * 2 + basisVWeights + legVWeights * 2
             )
-            nv = len(basisVWeights) + 2* len(legVWeights)
-            self.stateTerminalImportance = np.array([0, 0, 10, 0, 0, 50] + [1] * (nv - 6) + [1] * nv)
+            nv = len(basisVWeights) + 2 * len(legVWeights)
+            self.stateTerminalImportance = np.array(
+                [0, 0, 10, 0, 0, 50] + [1] * (nv - 6) + [1] * nv
+            )
             self.controlImportance = np.array([1] * 12)
-        if model_type == 'closed':
+        if model_type == "closed":
             eps = 0
-            basisQWeights = [0,0,0,50,50,0]
+            basisQWeights = [0, 0, 0, 50, 50, 0]
             legQWeights = [
-                1, 1, 1, # hip z, x, y
-                1, # knee (passive)
-                1, 1, # ankle x, y
-                eps, # knee (actuated)
-                eps, eps, eps, # spherical ankle
-                eps, eps, eps, # spherical ankle
-                eps, eps, # Ujoint knee
-                eps, # calf motor
-                eps, eps, # ujoint ankles-shins
-                eps, # calf motor
-                eps, eps, # ujoint ankles-shins
-                eps, eps, eps, # spherical hip
+                1,
+                1,
+                1,  # hip z, x, y
+                1,  # knee (passive)
+                1,
+                1,  # ankle x, y
+                eps,  # knee (actuated)
+                eps,
+                eps,
+                eps,  # spherical ankle
+                eps,
+                eps,
+                eps,  # spherical ankle
+                eps,
+                eps,  # Ujoint knee
+                eps,  # calf motor
+                eps,
+                eps,  # ujoint ankles-shins
+                eps,  # calf motor
+                eps,
+                eps,  # ujoint ankles-shins
+                eps,
+                eps,
+                eps,  # spherical hip
             ]
-            basisVWeights = [0,0,0,3,3,1]
+            basisVWeights = [0, 0, 0, 3, 3, 1]
             legVWeights = [
-                1, 1, 1, # hip z, x, y
-                1, # knee (passive)
-                1, 1, # ankle x, y
-                eps, # knee (actuated)
-                eps, eps, eps, # spherical ankle
-                eps, eps, eps, # spherical ankle
-                eps, eps, # Ujoint knee
-                eps, # calf motor
-                eps, eps, # ujoint ankles-shins
-                eps, # calf motor
-                eps, eps, # ujoint ankles-shins
-                eps, eps, eps, # spherical hip
+                1,
+                1,
+                1,  # hip z, x, y
+                1,  # knee (passive)
+                1,
+                1,  # ankle x, y
+                eps,  # knee (actuated)
+                eps,
+                eps,
+                eps,  # spherical ankle
+                eps,
+                eps,
+                eps,  # spherical ankle
+                eps,
+                eps,  # Ujoint knee
+                eps,  # calf motor
+                eps,
+                eps,  # ujoint ankles-shins
+                eps,  # calf motor
+                eps,
+                eps,  # ujoint ankles-shins
+                eps,
+                eps,
+                eps,  # spherical hip
             ]
             self.stateImportance = np.array(
                 basisQWeights + legQWeights * 2 + basisVWeights + legVWeights * 2
             )
-            velocityTarget = np.zeros(2*len(legVWeights))
-            velocityTarget[np.nonzero(legVWeights*2)] = 1
-            self.stateTerminalImportance = np.array([0, 0, 10, 0, 0, 50] + [1] * (2*len(legVWeights)) + [0, 0, 0, 0, 0, 0] + velocityTarget.tolist())
+            velocityTarget = np.zeros(2 * len(legVWeights))
+            velocityTarget[np.nonzero(legVWeights * 2)] = 1
+            self.stateTerminalImportance = np.array(
+                [0, 0, 10, 0, 0, 50]
+                + [1] * (2 * len(legVWeights))
+                + [0, 0, 0, 0, 0, 0]
+                + velocityTarget.tolist()
+            )
             self.controlImportance = np.array([1] * 12)
 
     def getReferenceForces(self, grav, com0):
-        alpha = 1+self.v0/(9.81*self.TPush*self.DT)
-        fpush = alpha/2*grav
-        alpha = 1+self.v0/(9.81*self.TLand*self.DT)
-        fland = alpha/2*grav
-        referenceForces = [np.array([1/2, 1/2])*grav for _ in range(self.TStand)]
+        alpha = 1 + self.v0 / (9.81 * self.TPush * self.DT)
+        fpush = alpha / 2 * grav
+        alpha = 1 + self.v0 / (9.81 * self.TLand * self.DT)
+        fland = alpha / 2 * grav
+        referenceForces = [np.array([1 / 2, 1 / 2]) * grav for _ in range(self.TStand)]
         referenceForces += [np.array([fpush, fpush]) for _ in range(self.TPush)]
         referenceForces += [np.array([0, 0]) for _ in range(self.TFly)]
         referenceForces += [np.array([fland, fland]) for _ in range(self.TLand)]
-        referenceForces += [np.array([1/2, 1/2])*grav for _ in range(self.Tend)]
+        referenceForces += [np.array([1 / 2, 1 / 2]) * grav for _ in range(self.Tend)]
 
         # import matplotlib.pyplot as plt
         # plt.figure()
@@ -166,3 +197,4 @@ class JumpBattobotParams(ParamsBase):
 
         self.referenceForces = referenceForces
         return referenceForces
+

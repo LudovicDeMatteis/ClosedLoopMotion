@@ -4,6 +4,7 @@ import sobec.walk_without_think.plotter
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def plot_solution(robot, ddp, sol, walkParams):
     plotter = sobec.wwt.plotter.WalkPlotter(robot.model, robot.contactIds)
     plotter.setData(walkParams.contactPattern, sol.xs, sol.us, sol.fs0)
@@ -36,10 +37,12 @@ def plot_solution(robot, ddp, sol, walkParams):
     plt.ion()
     plt.show()
 
+
 def create_viewer(robot, adress="127.0.0.1", port=6000, open=True):
     try:
         import meshcat
         from pinocchio.visualize import MeshcatVisualizer
+
         viz = MeshcatVisualizer(robot.model, robot.collision_model, robot.visual_model)
         if open:
             viz.initViewer(open=True)
@@ -47,9 +50,7 @@ def create_viewer(robot, adress="127.0.0.1", port=6000, open=True):
             viz.viewer = meshcat.Visualizer(zmq_url="tcp://{}:{}".format(adress, port))
         viz.clean()
         viz.loadViewerModel(rootNodeName="universe")
-
         return viz
     except (ImportError, AttributeError):
         print("No viewer")
-
         return None
